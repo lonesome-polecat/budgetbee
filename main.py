@@ -109,7 +109,7 @@ class App():
 
         self.next_btn = tk.Button(self.action_frame, text="Next", command=self.next_item)
         self.next_btn.pack(side=tk.RIGHT)
-        self.skip_btn = tk.Button(self.action_frame, text="Skip")
+        self.skip_btn = tk.Button(self.action_frame, text="Skip", command=self.save_backup_csv)
         self.skip_btn.pack(side=tk.RIGHT)
         self.back_btn = tk.Button(self.action_frame, text="Back", state=tk.DISABLED)
         self.back_btn.pack(side=tk.LEFT)
@@ -153,14 +153,14 @@ class App():
         confirm_label = tk.Label(self.main_frame, text="All finished! Do you want to attempt to upload to Google Sheets?")
         confirm_label.pack()
 
-        yes_btn = tk.Button(self.action_frame, text="Yes")
+        yes_btn = tk.Button(self.action_frame, text="Yes", command=(lambda : [self.save_backup_csv()]))
         yes_btn.pack()
-        no_btn = tk.Button(self.action_frame, text="No")
+        no_btn = tk.Button(self.action_frame, text="No", command=self.save_backup_csv)
         no_btn.pack()
 
+    def uploadToGoogle(self):
+        print("Uploading to Google")
 
-    def get_csv_file(self):
-        print("")
 
     def create_note_and_total(self, category_transactions: list):
         note = ""
@@ -172,10 +172,12 @@ class App():
         return note, total
 
     def save_backup_csv(self):
+        # This works - leaves a blank row in between each row though
         try:
-            with open(f"updated_transx_bak.csv", "w+") as f:
-                for trans in self.trans_list:
-                    csv.writer(f, "w", trans)  # This is likely not how it works, want to write each array as line of csv
+            with open(f"updated_transx_bak.csv", "w") as f:
+                writer = csv.writer(f)
+                writer.writerow(self.trans_headers.keys())
+                writer.writerows(self.trans_list)
             return True
         except BaseException as err:
             print(f"Error: {err}")

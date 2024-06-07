@@ -3,7 +3,7 @@ import os.path
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
+from googleapiclient.discovery import build, Resource
 from googleapiclient.errors import HttpError
 
 # If modifying these scopes, delete the file token.json.
@@ -15,6 +15,7 @@ BUDGET_SHEET_RANGE = "May!A1:K34"
 
 class GoogleClient():
   service = None
+
   def connect(self):
     """Shows basic usage of the Sheets API.
     Prints values from a sample spreadsheet.
@@ -39,7 +40,7 @@ class GoogleClient():
         token.write(creds.to_json())
 
     try:
-      self.service = build("sheets", "v4", credentials=creds)
+      self.service : Resource = build("sheets", "v4", credentials=creds)
       return True
     except HttpError as err:
       print(err)
@@ -48,9 +49,9 @@ class GoogleClient():
   def get_sheet_values(self):
     try:
       # Call the Sheets API
-      sheet = self.service.spreadsheets()
+      self.sheet = self.service.spreadsheets()
       result = (
-        sheet.values()
+        self.sheet.values()
         .get(spreadsheetId=BUDGET_SHEET, range=BUDGET_SHEET_RANGE)
         .execute()
       )
@@ -78,6 +79,19 @@ class GoogleClient():
     except HttpError as err:
       print(err)
 
+  def uploadData(self):
+    self.sheet = self.service.spreadsheets()
+    body = {"values": ["HelloThere"]}
+    result = (
+      self.sheet.values()
+      .update(spreadsheetId=BUDGET_SHEET,
+              range="G2:G3",
+              valueInputOption="USER_ENTERED",
+              body=body
+              )
+      .execute()
+    )
+    print(result)
 
 
 
@@ -87,4 +101,5 @@ if __name__ == "__main__":
   client = GoogleClient()
   if client.connect():
     client.get_sheet_values()
+    client.uploadData()
 
