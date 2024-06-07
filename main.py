@@ -8,6 +8,7 @@ except BaseException as err:
 
 
 class App():
+    trans_headers = dict()
     trans_list = []
     transByCat = {}
 
@@ -26,6 +27,14 @@ class App():
             csvFile = csv.reader(f)
             for i, line in enumerate(csvFile):
                 print(line)
+                if i == 0:
+                    for i, header in enumerate(line):
+                        self.trans_headers.update({header: i})
+                else:
+                    self.trans_list.append(line)
+            print(self.trans_headers)
+            print(self.trans_list)
+        # Now trans_list is populated and ordered by date
 
 
 
