@@ -11,6 +11,7 @@ class App():
     trans_headers = dict()
     trans_list = []
     trans_by_cat = {}
+    categories = dict()
 
     def main(self):
         self.root = tk.Tk()
@@ -19,6 +20,7 @@ class App():
 
         print("Beginning budget helper...")
         self.get_transactions('../transactions.csv')
+        self.get_categories_from_google()
         self.root.mainloop()
 
     def get_transactions(self, filename):
