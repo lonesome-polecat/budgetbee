@@ -1,13 +1,20 @@
 try:
     import tkinter as tk
     import csv
+    import google_client as gc
 except BaseException as err:
     print(f"***ERROR: {err}\n\n Install the necessary packages:")
     import time
     time.sleep(5)
 
+def app_error(message):
+    root = tk.Tk()
+    label = tk.Label(root, text=message)
+    label.pack(padx=10, pady=10)
+    root.mainloop()
 
 class App():
+    client = None
     trans_headers = dict()
     trans_list = []
     trans_by_cat = {}
@@ -41,6 +48,13 @@ class App():
     def get_categories_from_google(self):
         # call Google API with creds
         print("Getting categories from google sheets...")
+        try:
+            self.client = gc.GoogleClient()
+            self.client.connect()
+            self.categories = self.client.get_sheet_values()
+        except BaseException as err:
+            app_error(err)
+
 
     def set_category(self, i, trans, category, notes=None):
         # Update both sets of data in parallel
