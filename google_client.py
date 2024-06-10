@@ -81,11 +81,11 @@ class GoogleClient():
 
   def uploadData(self):
     self.sheet = self.service.spreadsheets()
-    body = {"values": ["HelloThere"]}
+    body = {"values": [["HelloThere", "colH"], ["Hi"], ["Thirdval"]]}
     result = (
       self.sheet.values()
       .update(spreadsheetId=BUDGET_SHEET,
-              range="G2:G3",
+              range="G2:H4",
               valueInputOption="USER_ENTERED",
               body=body
               )
