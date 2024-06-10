@@ -12,12 +12,13 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 # The ID and range of spreadsheet.
 BUDGET_SHEET = open("google_sheet.txt", "r").read()
-BUDGET_SHEET_RANGE = "May!A1:K34"
+BUDGET_SHEET_RANGE = "May!F3:F31"
 
 class GoogleClient():
   service = None
   budgetItems = {}
   categories = []
+  categoriesMap = {}
 
   def connect(self):
     """Shows basic usage of the Sheets API.
@@ -49,73 +50,44 @@ class GoogleClient():
       print(err)
       return False
 
-  def get_sheet_values(self):
-    try:
-      # Call the Sheets API
-      self.sheet = self.service.spreadsheets()
-      result = (
-        self.sheet.values()
-        .get(spreadsheetId=BUDGET_SHEET, range=BUDGET_SHEET_RANGE)
-        .execute()
-      )
-      print(result)
-      values = result.get("values", [])
-
-      if not values:
-        print("No data found.")
-        return
-
-      act_index = None
-      for i, row in enumerate(values):
-        print(row)
-        if i == 0:
-          for j, col in enumerate(row):
-            if col == "Actual":
-              act_index = j
-              break
-        else:
-          if (len(row) < act_index+1):
-            break
-          self.categories.append(row[act_index])
-      print(self.categories)
-      return self.categories
-    except HttpError as err:
-      print(err)
-
-  def get_sheet_values_spreadsheets(self):
+  def get_categories(self):
     try:
       # Call the Sheets API
       self.sheet = self.service.spreadsheets()
       result = (
         self.sheet
-        .get(spreadsheetId=BUDGET_SHEET, ranges=["May!A1:G20"], fields="sheets/data/rowData/values/note,sheets/data/rowData/values/userEnteredValue")
+        .get(spreadsheetId=BUDGET_SHEET, ranges=["F3:F31"],
+             fields="sheets/data/rowData/values/userEnteredValue")
         .execute()
       )
       print(result)
       rowData = result.get("sheets")[0].get("data")[0].get("rowData")
       print(rowData)
+      categories = []
       for i, row in enumerate(rowData):
-        for j in range(4, len(row.get("values"))):
-          if row.get("values")[j].get("userEnteredValue"):
-            print(row.get("values")[j].get("userEnteredValue").get("stringValue"))
-            if row.get("values")[j].get("userEnteredValue").get("stringValue") in self.categories:
-              if len(row.get("values")) == j+1:
-                category = {row.get("values")[j].get("userEnteredValue").get("stringValue"): {
-                  "rowIndex": i,
-                  "colIndex": j + 1,
-                  "value": "",
-                  "note": ""
-                }}
-              else:
-                category = {row.get("values")[j].get("userEnteredValue").get("stringValue") : {
-                  "rowIndex": i,
-                  "colIndex": j+1,
-                  "value": row.get("values")[j+1].get("userEnteredValue").get("formulaValue") or row.get("values")[j+1].get("userEnteredValue").get("numberValue"),
-                  "note": row.get("values")[j+1].get("note")
-                }}
-              self.budgetItems.update(category)
-              continue
-      print(self.budgetItems)
+        if row.get("values"):
+          cat = row.get("values")[0].get("userEnteredValue").get("stringValue")
+          categories.append(cat)
+          self.categoriesMap.update({cat: i})
+      print(categories)
+      return categories
+    except HttpError as err:
+      print(err)
+
+  def get_category_values_notes(self):
+    try:
+      # Call the Sheets API
+      self.sheet = self.service.spreadsheets()
+      result = (
+        self.sheet
+        .get(spreadsheetId=BUDGET_SHEET, ranges=["G3:G31"], fields="sheets/data/rowData/values/note,sheets/data/rowData/values/userEnteredValue")
+        .execute()
+      )
+      print(result)
+      rowData = result.get("sheets")[0].get("data")[0].get("rowData")
+      print(rowData)
+      return rowData
+
     except HttpError as err:
       print(err)
 
@@ -246,8 +218,9 @@ class GoogleClient():
 if __name__ == "__main__":
   client = GoogleClient()
   if client.connect():
-    client.test_upload_transactions()
-    # client.get_sheet_values()
-    # client.get_sheet_values_spreadsheets()
+    # client.test_upload_transactions()
+    client.get_categories()
+    print("\n\n")
+    client.get_category_values_notes()
     # client.uploadDataSpreadSheets()
     # client.get_prev_transactions()

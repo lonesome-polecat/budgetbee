@@ -20,6 +20,7 @@ class App():
     trans_list = []
     trans_by_cat = dict()
     categories = dict()
+    updateCatObject = dict()
 
     def main(self):
         self.root = tk.Tk()
@@ -39,6 +40,7 @@ class App():
         print("Beginning budget helper...")
         self.get_transactions('../transactions.csv')
         self.get_categories_from_google()
+        # self.updateCatObject = self.client.get_category_values_notes()
 
         self.root.mainloop()
 
@@ -63,7 +65,7 @@ class App():
         try:
             self.client = gc.GoogleClient()
             self.client.connect()
-            self.categories = self.client.get_sheet_values()
+            self.categories = self.client.get_categories()
         except BaseException as err:
             app_error(err)
 
