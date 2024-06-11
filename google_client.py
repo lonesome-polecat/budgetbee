@@ -16,9 +16,18 @@ BUDGET_SHEET_RANGE = "May!F3:F31"
 
 class GoogleClient():
   service = None
-  budgetItems = {}
+  expenses = []
   categories = []
   categoriesMap = {}
+  CAT_INDEX = 8
+  AMOUNT_INDEX = 4
+  NOTE_INDEX = 11
+
+  class CategoryObject:
+    def __init__(self, index, value, note):
+      self.index = index
+      self.value = value
+      self.note = note
 
   def connect(self):
     """Shows basic usage of the Sheets API.
@@ -56,8 +65,8 @@ class GoogleClient():
       self.sheet = self.service.spreadsheets()
       result = (
         self.sheet
-        .get(spreadsheetId=BUDGET_SHEET, ranges=["F3:F31"],
-             fields="sheets/data/rowData/values/userEnteredValue")
+        .get(spreadsheetId=BUDGET_SHEET, ranges=["F3:G31"],
+             fields="sheets/data/rowData/values/note,sheets/data/rowData/values/userEnteredValue")
         .execute()
       )
       print(result)
@@ -68,26 +77,23 @@ class GoogleClient():
         if row.get("values"):
           cat = row.get("values")[0].get("userEnteredValue").get("stringValue")
           categories.append(cat)
-          self.categoriesMap.update({cat: i})
+          if (len(row.get("values")) > 1):
+            catObj = self.CategoryObject(
+              i,
+              row.get("values")[1].get("userEnteredValue").get("formulaValue") or row.get("values")[0].get(
+              "userEnteredValue").get("numberValue"),
+              row.get("values")[1].get("note") or ""
+            )
+          else:
+            catObj = self.CategoryObject(
+              i,
+              "",
+              ""
+            )
+          self.categoriesMap.update({cat: catObj})
+      self.categories = categories
       print(categories)
       return categories
-    except HttpError as err:
-      print(err)
-
-  def get_category_values_notes(self):
-    try:
-      # Call the Sheets API
-      self.sheet = self.service.spreadsheets()
-      result = (
-        self.sheet
-        .get(spreadsheetId=BUDGET_SHEET, ranges=["G3:G31"], fields="sheets/data/rowData/values/note,sheets/data/rowData/values/userEnteredValue")
-        .execute()
-      )
-      print(result)
-      rowData = result.get("sheets")[0].get("data")[0].get("rowData")
-      print(rowData)
-      return rowData
-
     except HttpError as err:
       print(err)
 
@@ -173,9 +179,16 @@ class GoogleClient():
 
   def upload_transactions(self, transactions):
     rows = []
-    for trans in transactions:
+    print(F"categories = {self.categories}")
+    for tran in transactions:
+      print(tran[self.CAT_INDEX])
+      if tran[self.CAT_INDEX] in self.categories:
+        self.updateExpenses(tran)
+      else:
+        error = f"Invalid category: ({tran[self.CAT_INDEX]}) how did that get in there?"
+        print(error)
       values = []
-      for item in trans:
+      for item in tran:
         values.append({"userEnteredValue": {"stringValue":item}})
       rows.append({"values": values})
     request = {"appendCells":
@@ -196,6 +209,14 @@ class GoogleClient():
     )
     print(result)
 
+  def updateExpenses(self, tran: list):
+    if self.categoriesMap.get(tran[self.CAT_INDEX]).value:
+      print(self.categoriesMap.get(tran[self.CAT_INDEX]).value)
+      self.categoriesMap.get(tran[self.CAT_INDEX]).value += "-" + tran[self.AMOUNT_INDEX]
+    else:
+      self.categoriesMap.get(tran[self.CAT_INDEX]).value = "=" + tran[self.AMOUNT_INDEX]
+    print(self.categoriesMap.get(tran[self.CAT_INDEX]).value)
+
   def test_upload_transactions(self):
     print("Extracting transactions from csv...")
     filename = '../transactions.csv'
@@ -209,18 +230,13 @@ class GoogleClient():
     self.upload_transactions(trans_list)
 
 
-
-
-
-
-
-
 if __name__ == "__main__":
   client = GoogleClient()
   if client.connect():
-    # client.test_upload_transactions()
     client.get_categories()
+    client.test_upload_transactions()
     print("\n\n")
-    client.get_category_values_notes()
+    # client.get_category_values_notes()
+    # print(client.expenses)
     # client.uploadDataSpreadSheets()
     # client.get_prev_transactions()

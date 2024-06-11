@@ -40,7 +40,7 @@ class App():
         print("Beginning budget helper...")
         self.get_transactions('../transactions.csv')
         self.get_categories_from_google()
-        # self.updateCatObject = self.client.get_category_values_notes()
+        self.updateCatObject = self.client.get_category_values_notes()
 
         self.root.mainloop()
 
@@ -155,13 +155,15 @@ class App():
         confirm_label = tk.Label(self.main_frame, text="All finished! Do you want to attempt to upload to Google Sheets?")
         confirm_label.pack()
 
-        yes_btn = tk.Button(self.action_frame, text="Yes", command=(lambda : [self.save_backup_csv()]))
+        yes_btn = tk.Button(self.action_frame, text="Yes", command=(lambda : [self.save_backup_csv(), self.uploadToGoogle(), self.root.destroy()]))
         yes_btn.pack()
-        no_btn = tk.Button(self.action_frame, text="No", command=self.save_backup_csv)
+        no_btn = tk.Button(self.action_frame, text="No", command=(lambda : [self.save_backup_csv(), self.root.destroy()]))
         no_btn.pack()
 
     def uploadToGoogle(self):
         print("Uploading to Google")
+        self.client.upload_transactions(self.trans_list)
+        print("Success!")
 
 
     def create_note_and_total(self, category_transactions: list):
