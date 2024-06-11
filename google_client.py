@@ -16,7 +16,6 @@ BUDGET_SHEET_RANGE = "May!F3:F31"
 
 class GoogleClient():
   service = None
-  expenses = []
   categories = []
   categoriesMap = {}
   CAT_INDEX = 8
@@ -96,56 +95,6 @@ class GoogleClient():
       return categories
     except HttpError as err:
       print(err)
-
-  def get_prev_transactions(self):
-    try:
-      # Call the Sheets API
-      self.sheet = self.service.spreadsheets()
-      result = (
-        self.sheet.values()
-        .get(spreadsheetId=BUDGET_SHEET, range="transactions!A1:Z100")
-        .execute()
-      )
-      values = result.get("values", [])
-      if not values:
-        print("No data found.")
-        # In this case, use all transactions
-        # Fill out sheet with headers and recent transactions
-        return
-
-      act_index = None
-      categories = []
-      for i, row in enumerate(values):
-        print(row)
-        if i == 0:
-          for j, col in enumerate(row):
-            if col == "Actual":
-              act_index = j
-              break
-        else:
-          if (len(row) < act_index + 1):
-            break
-          categories.append(row[act_index])
-      print(categories)
-      return categories
-
-    except HttpError as err:
-      print(err)
-
-
-  def uploadData(self):
-    self.sheet = self.service.spreadsheets()
-    body = {"values": [["HelloThere", "colH"], ["Hi"], ["Thirdval"]]}
-    result = (
-      self.sheet.values()
-      .update(spreadsheetId=BUDGET_SHEET,
-              range="G2:H4",
-              valueInputOption="USER_ENTERED",
-              body=body
-              )
-      .execute()
-    )
-    print(result)
 
   def uploadDataSpreadSheets(self):
     self.sheet = self.service.spreadsheets()
