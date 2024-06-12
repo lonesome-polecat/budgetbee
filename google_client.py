@@ -119,7 +119,7 @@ class GoogleClient():
         if row.get("values"):
           cat = row.get("values")[0].get("userEnteredValue").get("stringValue")
           categories.append(cat)
-          if len(row.get("values")) > 1:
+          if len(row.get("values")) > 1 and row.get("values")[1].get("userEnteredValue"):
             catObj = self.CategoryObject(
               i,
               row.get("values")[1].get("userEnteredValue").get("formulaValue") or row.get("values")[1].get("userEnteredValue").get("numberValue"),
@@ -202,6 +202,8 @@ class GoogleClient():
     self.uploadExpenses()
 
   def updateExpenses(self, tran: list):
+    if tran[self.CAT_INDEX] == "Income" or tran[self.CAT_INDEX] == "Unknown":
+      return
     sign = "-" if self.isCCCU else "+"
     if self.categoriesMap.get(tran[self.CAT_INDEX]).value:
       print(self.categoriesMap.get(tran[self.CAT_INDEX]).value)
