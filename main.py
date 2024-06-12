@@ -112,6 +112,8 @@ class App():
             self.client = gc.GoogleClient()
             self.client.connect()
             self.categories = self.client.get_categories()
+            self.categories.append("Income")
+            self.categories.append("Unknown")
         except BaseException as err:
             app_error(err)
 
