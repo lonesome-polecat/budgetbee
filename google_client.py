@@ -58,6 +58,43 @@ class GoogleClient():
       print(err)
       return False
 
+  def set_indices(self, bank):
+    if bank == "Discover":
+      self.CAT_INDEX = 4
+      self.AMOUNT_INDEX = 3
+      self.NOTE_INDEX = 5
+    else:
+      self.CAT_INDEX = 8
+      self.AMOUNT_INDEX = 4
+      self.NOTE_INDEX = 11
+
+  def get_last_transaction(self, bank):
+    sheet = self.service.spreadsheets()
+    result = sheet.values().get(
+      spreadsheetId=BUDGET_SHEET,
+      range="transactions!A2:M"
+    ).execute()
+    values = result.get("values")
+    if not values:
+      return
+    last_tran = []
+    if bank == "CCCU":
+      for i in range(len(values)-1, 0, -1):
+        print(i)
+        print(values[i])
+        if len(values[i]) > 7:
+          last_tran = values[i]
+          break
+      print(last_tran)
+      return last_tran
+    elif bank == "Discover":
+      for i in range(len(values)-1, 0, -1):
+        if len(values[i]) < 7:
+          last_tran = values[i]
+          break
+      print(last_tran)
+      return last_tran
+
   def get_categories(self):
     try:
       # Call the Sheets API
@@ -125,10 +162,10 @@ class GoogleClient():
     )
     print(result)
 
-  def upload_transactions(self, transactions):
+  def upload_transactions(self, transactions: list[list[str]]):
     rows = []
     print(F"categories = {self.categories}")
-    for tran in transactions:
+    for tran in reversed(transactions):
       print(tran[self.CAT_INDEX])
       if tran[self.CAT_INDEX] in self.categories:
         self.updateExpenses(tran)
@@ -167,7 +204,8 @@ class GoogleClient():
 
   def test_upload_transactions(self):
     print("Extracting transactions from csv...")
-    filename = '../transactions_short.csv'
+    # filename = '../transactions_short.csv'
+    filename = '../transactions_discover.csv'
     trans_list = []
     with open(filename, 'r') as f:
       csvFile = csv.reader(f)
@@ -176,7 +214,7 @@ class GoogleClient():
         trans_list.append(line)
 
     self.upload_transactions(trans_list)
-    self.uploadExpenses()
+    # self.uploadExpenses()
     print("ALL DONE!!!")
 
   def uploadExpenses(self):
@@ -227,7 +265,9 @@ class GoogleClient():
 if __name__ == "__main__":
   client = GoogleClient()
   if client.connect():
-    client.get_categories()
+    client.set_indices("Discover")
+    client.get_last_transaction("Discover")
+    # client.get_categories()
     client.test_upload_transactions()
     print("\n\n")
     # client.get_category_values_notes()

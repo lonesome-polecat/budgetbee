@@ -21,6 +21,9 @@ class App():
     trans_by_cat = dict()
     categories = dict()
     updateCatObject = dict()
+    isCCCU = True
+    isDiscover = False
+    POST_DATE = "Posting Date"
 
     def main(self):
         self.root = tk.Tk()
@@ -34,15 +37,40 @@ class App():
         label.pack(side=tk.TOP, padx=10, pady=20)
 
         self.get_started_btn = tk.Button(self.action_frame, text="Get Started", command=(
-            lambda: [self.start_finances()]))
+            lambda: [self.check_bank_window()]))
         self.get_started_btn.pack(side=tk.BOTTOM, padx=10, pady=10)
 
         print("Beginning budget helper...")
-        self.get_transactions('../transactions.csv')
+        self.get_transactions('../transactions_discover.csv')
         self.get_categories_from_google()
-        self.updateCatObject = self.client.get_category_values_notes()
-
         self.root.mainloop()
+
+    def check_bank_window(self):
+        self.clear(self.main_frame)
+        self.clear(self.action_frame)
+
+        label = tk.Label(self.main_frame, text="Which bank are you using?")
+        label.pack()
+        bank_selector = ttk.Combobox(self.action_frame, values=["CCCU", "Discover"], textvariable="CCCU")
+        bank_selector.pack()
+        btn = tk.Button(self.action_frame, text="Next", command=(lambda: [self.set_bank(bank_selector), self.start_finances()]))
+        btn.pack()
+
+    def set_bank(self, bank_selector):
+        bank = bank_selector.get()
+        print(bank)
+        if bank == "Discover":
+            self.isCCCU = False
+            self.isDiscover = True
+            self.POST_DATE = "Post Date"
+        else:
+            bank = "CCCU"
+            self.isCCCU = True
+            self.isDiscover = False
+            self.POST_DATE = "Posting Date"
+
+        self.client.set_indices(bank)
+
 
     def get_transactions(self, filename):
         print("Extracting transactions from csv...")
@@ -122,7 +150,7 @@ class App():
 
     def next_item(self):
         category = self.category_box.get()
-        self.trans_list[self.curr_index][self.trans_headers["Transaction Category"]] = category
+        self.trans_list[self.curr_index][self.trans_headers[("Transaction Category" if self.isCCCU else "Category")]] = category
         print(self.trans_list[self.curr_index])
         if not self.trans_by_cat.get(category):
             self.trans_by_cat.update({category: []})
@@ -134,10 +162,9 @@ class App():
             self.confirm_window()
             return
         print("Updating labels")
-        self.date_val_label.config(text=self.trans_list[self.curr_index][self.trans_headers["Posting Date"]])
+        self.date_val_label.config(text=self.trans_list[self.curr_index][self.trans_headers[self.POST_DATE]])
         self.amt_val_label.config(text=self.trans_list[self.curr_index][self.trans_headers["Amount"]])
         self.desc_val_label.config(text=self.trans_list[self.curr_index][self.trans_headers["Description"]])
-
 
     def set_category(self, i, trans, category, notes=None):
         # Update both sets of data in parallel
