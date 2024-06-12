@@ -82,7 +82,7 @@ class GoogleClient():
     ).execute()
     values = result.get("values")
     if not values:
-      return
+      return []
     last_tran = []
     if bank == "CCCU":
       for i in range(len(values)-1, 0, -1):
@@ -171,7 +171,7 @@ class GoogleClient():
   def upload_transactions(self, transactions: list[list[str]]):
     rows = []
     print(F"categories = {self.categories}")
-    for tran in reversed(transactions):
+    for tran in transactions:
       print(tran[self.CAT_INDEX])
       if tran[self.CAT_INDEX] in self.categories:
         self.updateExpenses(tran)
@@ -212,8 +212,8 @@ class GoogleClient():
 
   def test_upload_transactions(self):
     print("Extracting transactions from csv...")
-    # filename = '../transactions_short.csv'
-    filename = '../transactions_discover.csv'
+    filename = '../transactions_short.csv'
+    # filename = '../transactions_discover.csv'
     trans_list = []
     with open(filename, 'r') as f:
       csvFile = csv.reader(f)

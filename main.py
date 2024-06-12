@@ -3,6 +3,7 @@ try:
     import tkinter.ttk as ttk
     import csv
     import google_client as gc
+    from datetime import datetime as dt
 except BaseException as err:
     print(f"***ERROR: {err}\n\n Install the necessary packages:")
     import time
@@ -41,7 +42,8 @@ class App():
         self.get_started_btn.pack(side=tk.BOTTOM, padx=10, pady=10)
 
         print("Beginning budget helper...")
-        self.get_transactions('../transactions_discover.csv')
+        self.get_transactions('../transactions_short.csv')
+        # self.get_transactions('../transactions_discover.csv')
         self.get_categories_from_google()
         self.root.mainloop()
 
@@ -70,7 +72,22 @@ class App():
             self.POST_DATE = "Posting Date"
 
         self.client.set_indices(bank)
+        self.remove_duplicate_transactions()
 
+    def remove_duplicate_transactions(self):
+        last = self.client.get_last_transaction("CCCU" if self.isCCCU else "Discover")
+        if not last:
+            return
+        last_date = dt.strptime(last[self.trans_headers[self.POST_DATE]], "%m/%d/%Y")
+        for i, tran in enumerate(self.trans_list):
+            tran_date = dt.strptime(tran[self.trans_headers[self.POST_DATE]], "%m/%d/%Y")
+            print(tran)
+            if tran_date < last_date:
+                continue
+            else:
+                self.trans_list = self.trans_list[i:]
+                print(self.trans_list)
+                break
 
     def get_transactions(self, filename):
         print("Extracting transactions from csv...")
@@ -85,7 +102,8 @@ class App():
                     self.trans_list.append(line)
             print(self.trans_headers)
             print(self.trans_list)
-        # Now trans_list is populated and ordered by date
+            self.trans_list = self.trans_list[::-1]
+        # Now trans_list is populated and ordered by date (reverse)
 
     def get_categories_from_google(self):
         # call Google API with creds
@@ -139,7 +157,7 @@ class App():
 
         self.next_btn = tk.Button(self.action_frame, text="Next", command=self.next_item)
         self.next_btn.pack(side=tk.RIGHT)
-        self.skip_btn = tk.Button(self.action_frame, text="Skip", command=self.save_backup_csv)
+        self.skip_btn = tk.Button(self.action_frame, text="Skip", command=(lambda: [self.next_item(True)]))
         self.skip_btn.pack(side=tk.RIGHT)
         self.back_btn = tk.Button(self.action_frame, text="Back", state=tk.DISABLED)
         self.back_btn.pack(side=tk.LEFT)
@@ -148,17 +166,25 @@ class App():
         for w in frame.winfo_children():
             w.destroy()
 
-    def next_item(self):
-        category = self.category_box.get()
-        self.trans_list[self.curr_index][self.trans_headers[("Transaction Category" if self.isCCCU else "Category")]] = category
-        print(self.trans_list[self.curr_index])
-        if not self.trans_by_cat.get(category):
-            self.trans_by_cat.update({category: []})
-        # This does not allow going back yet
-        self.trans_by_cat.get(category).append(self.trans_list[self.curr_index])
-        print("Updating current index")
-        self.curr_index += 1
-        if self.curr_index == self.num_trans - 1:
+    def next_item(self, skip=False):
+        if not skip:
+            category = self.category_box.get()
+            self.trans_list[self.curr_index][self.trans_headers[("Transaction Category" if self.isCCCU else "Category")]] = category
+            print(self.trans_list[self.curr_index])
+            if not self.trans_by_cat.get(category):
+                self.trans_by_cat.update({category: []})
+            # This does not allow going back yet
+            self.trans_by_cat.get(category).append(self.trans_list[self.curr_index])
+            print("Updating current index")
+            self.curr_index += 1
+        else:
+            self.trans_list.pop(self.curr_index)
+            self.num_trans -= 1
+            print("\n*** SKIPPED ***\n")
+            print(self.trans_list)
+            print(self.num_trans)
+            print(self.curr_index)
+        if self.curr_index == self.num_trans:
             self.confirm_window()
             return
         print("Updating labels")
