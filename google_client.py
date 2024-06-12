@@ -76,11 +76,10 @@ class GoogleClient():
         if row.get("values"):
           cat = row.get("values")[0].get("userEnteredValue").get("stringValue")
           categories.append(cat)
-          if (len(row.get("values")) > 1):
+          if len(row.get("values")) > 1:
             catObj = self.CategoryObject(
               i,
-              row.get("values")[1].get("userEnteredValue").get("formulaValue") or row.get("values")[0].get(
-              "userEnteredValue").get("numberValue"),
+              row.get("values")[1].get("userEnteredValue").get("formulaValue") or row.get("values")[1].get("userEnteredValue").get("numberValue"),
               row.get("values")[1].get("note") or ""
             )
           else:
@@ -96,7 +95,7 @@ class GoogleClient():
     except HttpError as err:
       print(err)
 
-  def uploadDataSpreadSheets(self):
+  def test_uploadDataSpreadSheets(self):
     self.sheet = self.service.spreadsheets()
     request = {
       "updateCells": {
@@ -168,7 +167,7 @@ class GoogleClient():
 
   def test_upload_transactions(self):
     print("Extracting transactions from csv...")
-    filename = '../transactions.csv'
+    filename = '../transactions_short.csv'
     trans_list = []
     with open(filename, 'r') as f:
       csvFile = csv.reader(f)
@@ -177,6 +176,52 @@ class GoogleClient():
         trans_list.append(line)
 
     self.upload_transactions(trans_list)
+    self.uploadExpenses()
+    print("ALL DONE!!!")
+
+  def uploadExpenses(self):
+    self.sheet = self.service.spreadsheets()
+    rows = []
+    last_index = -1
+    for category in self.categoriesMap.values():
+      print(category.index)
+      print(category.note)
+      if not category.value:
+        continue
+      while category.index != last_index + 1:
+        rows.append({})
+        last_index += 1
+      values = [{
+        "userEnteredValue": {
+          "formulaValue": category.value or "="
+        },
+        "note": category.note or ""
+      }]
+      rows.append({"values": values})
+      last_index += 1
+    print(len(rows))
+    request = {
+      "updateCells": {
+        "range": {
+          "sheetId": 1456670933,
+          "startColumnIndex": 6,
+          "startRowIndex": 2,
+          "endColumnIndex": 7,
+          "endRowIndex": 31
+        },
+        "rows": rows,
+        "fields": "userEnteredValue"
+      }
+    }
+    body = {"requests": [request]}
+    result = (
+      self.sheet.batchUpdate(spreadsheetId=BUDGET_SHEET,
+                             body=body
+                             )
+      .execute()
+    )
+    print(result)
+
 
 
 if __name__ == "__main__":
