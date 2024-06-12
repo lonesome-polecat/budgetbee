@@ -21,6 +21,8 @@ class GoogleClient():
   CAT_INDEX = 8
   AMOUNT_INDEX = 4
   NOTE_INDEX = 11
+  isCCCU = True
+  isDiscover = False
 
   class CategoryObject:
     def __init__(self, index, value, note):
@@ -60,10 +62,14 @@ class GoogleClient():
 
   def set_indices(self, bank):
     if bank == "Discover":
+      self.isDiscover = True
+      self.isCCCU = False
       self.CAT_INDEX = 4
       self.AMOUNT_INDEX = 3
       self.NOTE_INDEX = 5
     else:
+      self.isDiscover = False
+      self.isCCCU = True
       self.CAT_INDEX = 8
       self.AMOUNT_INDEX = 4
       self.NOTE_INDEX = 11
@@ -193,13 +199,15 @@ class GoogleClient():
       .execute()
     )
     print(result)
+    self.uploadExpenses()
 
   def updateExpenses(self, tran: list):
+    sign = "-" if self.isCCCU else "+"
     if self.categoriesMap.get(tran[self.CAT_INDEX]).value:
       print(self.categoriesMap.get(tran[self.CAT_INDEX]).value)
-      self.categoriesMap.get(tran[self.CAT_INDEX]).value += "-" + tran[self.AMOUNT_INDEX]
+      self.categoriesMap.get(tran[self.CAT_INDEX]).value += sign + tran[self.AMOUNT_INDEX]
     else:
-      self.categoriesMap.get(tran[self.CAT_INDEX]).value = "=" + tran[self.AMOUNT_INDEX]
+      self.categoriesMap.get(tran[self.CAT_INDEX]).value = "=" + sign + tran[self.AMOUNT_INDEX]
     print(self.categoriesMap.get(tran[self.CAT_INDEX]).value)
 
   def test_upload_transactions(self):
