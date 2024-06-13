@@ -101,17 +101,17 @@ class GoogleClient():
       print(last_tran)
       return last_tran
 
-  def get_categories(self):
+  def get_categories(self, month):
     try:
       # Call the Sheets API
+      self.selected_month = month
       self.sheet = self.service.spreadsheets()
       result = (
         self.sheet
-        .get(spreadsheetId=BUDGET_SHEET, ranges=["F3:G31"],
+        .get(spreadsheetId=BUDGET_SHEET, ranges=[f"{month}!F3:G31"],
              fields="sheets/data/rowData/values/note,sheets/data/rowData/values/userEnteredValue")
         .execute()
       )
-      print(result)
       rowData = result.get("sheets")[0].get("data")[0].get("rowData")
       print(rowData)
       categories = []
@@ -256,10 +256,11 @@ class GoogleClient():
       rows.append({"values": values})
       last_index += 1
     print(len(rows))
+    sheetId = self.monthsMap.get(self.selected_month)
     request = {
       "updateCells": {
         "range": {
-          "sheetId": 1456670933,
+          "sheetId": sheetId,
           "startColumnIndex": 6,
           "startRowIndex": 2,
           "endColumnIndex": 7,
@@ -278,15 +279,30 @@ class GoogleClient():
     )
     print(result)
 
+  def get_sheet_names(self):
+    sheet = self.service.spreadsheets()
+    result = sheet.get(spreadsheetId=BUDGET_SHEET).execute()
+    print(result.keys())
+    self.monthsMap = {}
+    for tab in result.get("sheets"):
+      if tab.get("properties").get("title") == "transactions":
+        continue
+      self.monthsMap.update({
+        tab.get("properties").get("title"): tab.get("properties").get("sheetId")
+      })
+    print(self.monthsMap)
+
+
 
 
 if __name__ == "__main__":
   client = GoogleClient()
   if client.connect():
-    client.set_indices("Discover")
-    client.get_last_transaction("Discover")
+    client.get_sheet_names()
+    # client.set_indices("Discover")
+    # client.get_last_transaction("Discover")
     # client.get_categories()
-    client.test_upload_transactions()
+    # client.test_upload_transactions()
     print("\n\n")
     # client.get_category_values_notes()
     # print(client.expenses)

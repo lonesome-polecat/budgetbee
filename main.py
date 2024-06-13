@@ -27,6 +27,11 @@ class App():
     POST_DATE = "Posting Date"
 
     def main(self):
+        try:
+            self.client = gc.GoogleClient()
+            self.client.connect()
+        except BaseException as err:
+            app_error(err)
         self.root = tk.Tk()
         self.root.title("BudgetBee")
         self.main_frame = tk.Frame(self.root)
@@ -44,7 +49,7 @@ class App():
         print("Beginning budget helper...")
         self.get_transactions('../transactions_short.csv')
         # self.get_transactions('../transactions_discover.csv')
-        self.get_categories_from_google()
+        # self.get_categories_from_google()
         self.root.mainloop()
 
     def check_bank_window(self):
@@ -56,7 +61,7 @@ class App():
         bank_selector = ttk.Combobox(self.action_frame, values=["CCCU", "Discover"])
         bank_selector.pack()
         bank_selector.set("CCCU")
-        btn = tk.Button(self.action_frame, text="Next", command=(lambda: [self.set_bank(bank_selector), self.start_finances()]))
+        btn = tk.Button(self.action_frame, text="Next", command=(lambda: [self.set_bank(bank_selector), self.check_month()]))
         btn.pack()
 
     def set_bank(self, bank_selector):
@@ -109,17 +114,38 @@ class App():
             self.trans_list = self.trans_list[::-1]
         # Now trans_list is populated and ordered by date (reverse)
 
-    def get_categories_from_google(self):
+    def get_categories_from_google(self, month):
         # call Google API with creds
         print("Getting categories from google sheets...")
         try:
-            self.client = gc.GoogleClient()
-            self.client.connect()
-            self.categories = self.client.get_categories()
+            self.categories = self.client.get_categories(month)
             self.categories.append("Income")
             self.categories.append("Unknown")
         except BaseException as err:
             app_error(err)
+
+    def check_month(self):
+        self.clear(self.main_frame)
+        self.clear(self.action_frame)
+        self.client.get_sheet_names()
+        months = []
+        for key in self.client.monthsMap.keys():
+            months.append(key)
+
+        label = tk.Label(self.main_frame, text="Which month?")
+        label.pack(padx=5, pady=5)
+        month_selector = ttk.Combobox(self.action_frame, values=months)
+        month_selector.pack()
+        month_selector.set(months[0])
+        btn = tk.Button(self.action_frame, text="Next",
+                        command=(lambda: [self.set_month(month_selector), self.start_finances()]))
+        btn.pack()
+
+    def set_month(self, month_selector):
+        month = month_selector.get()
+        print(month)
+        self.get_categories_from_google(month)
+
 
     def start_finances(self):
         self.make_fin_window()
