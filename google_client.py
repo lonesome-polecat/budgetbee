@@ -118,6 +118,10 @@ class GoogleClient():
       for i, row in enumerate(rowData):
         if row.get("values"):
           cat = row.get("values")[0].get("userEnteredValue").get("stringValue")
+          if cat == "Leftover":
+            self.budgetEndIndex = i
+            self.savingsStartIndex = i+1
+            continue
           categories.append(cat)
           if len(row.get("values")) > 1 and row.get("values")[1].get("userEnteredValue"):
             catObj = self.CategoryObject(
@@ -202,15 +206,19 @@ class GoogleClient():
     self.uploadExpenses()
 
   def updateExpenses(self, tran: list):
-    if tran[self.CAT_INDEX] == "Income" or tran[self.CAT_INDEX] == "Unknown":
+    cat = tran[self.CAT_INDEX]
+    if cat == "Income" or cat == "Unknown":
       return
-    sign = "-" if self.isCCCU else "+"
-    if self.categoriesMap.get(tran[self.CAT_INDEX]).value:
-      print(self.categoriesMap.get(tran[self.CAT_INDEX]).value)
-      self.categoriesMap.get(tran[self.CAT_INDEX]).value += sign + tran[self.AMOUNT_INDEX]
+    if self.categoriesMap.get(cat).index < self.savingsStartIndex:
+      sign = "-" if self.isCCCU else "+"
     else:
-      self.categoriesMap.get(tran[self.CAT_INDEX]).value = "=" + sign + tran[self.AMOUNT_INDEX]
-    print(self.categoriesMap.get(tran[self.CAT_INDEX]).value)
+      sign = "+" if self.isCCCU else "-"
+    if self.categoriesMap.get(cat).value:
+      print(self.categoriesMap.get(cat).value)
+      self.categoriesMap.get(cat).value += sign + tran[self.AMOUNT_INDEX]
+    else:
+      self.categoriesMap.get(cat).value = "=" + sign + tran[self.AMOUNT_INDEX]
+    print(self.categoriesMap.get(cat).value)
 
   def test_upload_transactions(self):
     print("Extracting transactions from csv...")

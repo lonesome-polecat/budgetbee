@@ -30,9 +30,9 @@ class App():
         self.root = tk.Tk()
         self.root.title("BudgetBee")
         self.main_frame = tk.Frame(self.root)
-        self.main_frame.pack(side=tk.TOP)
+        self.main_frame.pack(side=tk.TOP, padx=10, pady=10)
         self.action_frame = tk.Frame(self.root)
-        self.action_frame.pack(side=tk.BOTTOM)
+        self.action_frame.pack(side=tk.BOTTOM, padx=10, pady=10)
 
         label = tk.Label(self.main_frame, text="Welcome to BudgetBee!")
         label.pack(side=tk.TOP, padx=10, pady=20)
@@ -52,9 +52,10 @@ class App():
         self.clear(self.action_frame)
 
         label = tk.Label(self.main_frame, text="Which bank are you using?")
-        label.pack()
-        bank_selector = ttk.Combobox(self.action_frame, values=["CCCU", "Discover"], textvariable="CCCU")
+        label.pack(padx=5, pady=5)
+        bank_selector = ttk.Combobox(self.action_frame, values=["CCCU", "Discover"])
         bank_selector.pack()
+        bank_selector.set("CCCU")
         btn = tk.Button(self.action_frame, text="Next", command=(lambda: [self.set_bank(bank_selector), self.start_finances()]))
         btn.pack()
 
@@ -78,7 +79,10 @@ class App():
         last = self.client.get_last_transaction("CCCU" if self.isCCCU else "Discover")
         if not last:
             return
-        last_date = dt.strptime(last[self.trans_headers[self.POST_DATE]], "%m/%d/%Y")
+        try:
+            last_date = dt.strptime(last[self.trans_headers[self.POST_DATE]], "%m/%d/%Y")
+        except BaseException as err:
+            app_error("Wrong bank")
         for i, tran in enumerate(self.trans_list):
             tran_date = dt.strptime(tran[self.trans_headers[self.POST_DATE]], "%m/%d/%Y")
             print(tran)
