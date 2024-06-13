@@ -243,12 +243,6 @@ class App():
             return False
 
 
-
-
-
-
-
-
 if __name__ == "__main__":
     myApp = App()
     myApp.main()
