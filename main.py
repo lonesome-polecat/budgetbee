@@ -32,9 +32,10 @@ class App():
             self.client.connect()
         except BaseException as err:
             app_error(err)
+
         self.root = tk.Tk()
         self.root.title("BudgetBee")
-        self.main_frame = tk.Frame(self.root)
+        self.main_frame = tk.Frame(self.root, width=300)
         self.main_frame.pack(side=tk.TOP, padx=10, pady=10)
         self.action_frame = tk.Frame(self.root)
         self.action_frame.pack(side=tk.BOTTOM, padx=10, pady=10)
@@ -59,7 +60,7 @@ class App():
         label = tk.Label(self.main_frame, text="Which bank are you using?")
         label.pack(padx=5, pady=5)
         bank_selector = ttk.Combobox(self.action_frame, values=["CCCU", "Discover"])
-        bank_selector.pack()
+        bank_selector.pack(padx=5, pady=5)
         bank_selector.set("CCCU")
         btn = tk.Button(self.action_frame, text="Next", command=(lambda: [self.set_bank(bank_selector), self.check_month()]))
         btn.pack()
@@ -135,7 +136,7 @@ class App():
         label = tk.Label(self.main_frame, text="Which month?")
         label.pack(padx=5, pady=5)
         month_selector = ttk.Combobox(self.action_frame, values=months)
-        month_selector.pack()
+        month_selector.pack(padx=5, pady=5)
         month_selector.set(months[0])
         btn = tk.Button(self.action_frame, text="Next",
                         command=(lambda: [self.set_month(month_selector), self.start_finances()]))
@@ -189,7 +190,7 @@ class App():
 
         self.next_btn = tk.Button(self.action_frame, text="Next", command=self.next_item)
         self.next_btn.pack(side=tk.RIGHT)
-        self.skip_btn = tk.Button(self.action_frame, text="Skip", command=(lambda: [self.next_item(True)]))
+        self.skip_btn = tk.Button(self.action_frame, text="Ignore", command=(lambda: [self.next_item(True)]))
         self.skip_btn.pack(side=tk.RIGHT)
         self.back_btn = tk.Button(self.action_frame, text="Back", state=tk.DISABLED)
         self.back_btn.pack(side=tk.LEFT)
@@ -241,9 +242,9 @@ class App():
         confirm_label.pack()
 
         yes_btn = tk.Button(self.action_frame, text="Yes", command=(lambda : [self.save_backup_csv(), self.uploadToGoogle(), self.root.destroy()]))
-        yes_btn.pack()
+        yes_btn.pack(side=tk.RIGHT, padx=5, pady=5)
         no_btn = tk.Button(self.action_frame, text="No", command=(lambda : [self.save_backup_csv(), self.root.destroy()]))
-        no_btn.pack()
+        no_btn.pack(side=tk.LEFT, padx=5, pady=5)
 
     def uploadToGoogle(self):
         print("Uploading to Google")
