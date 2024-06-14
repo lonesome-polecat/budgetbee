@@ -1,6 +1,7 @@
 try:
     import tkinter as tk
     import tkinter.ttk as ttk
+    from tkinter import filedialog
     import csv
     import google_client as gc
     from datetime import datetime as dt
@@ -44,7 +45,7 @@ class App():
         label.pack(side=tk.TOP, padx=10, pady=20)
 
         self.get_started_btn = tk.Button(self.action_frame, text="Get Started", command=(
-            lambda: [self.check_bank_window()]))
+            lambda: [self.select_transactions_file()]))
         self.get_started_btn.pack(side=tk.BOTTOM, padx=10, pady=10)
 
         print("Beginning budget helper...")
@@ -52,6 +53,32 @@ class App():
         # self.get_transactions('../transactions_discover.csv')
         # self.get_categories_from_google()
         self.root.mainloop()
+
+    def select_transactions_file(self):
+        self.clear(self.main_frame)
+        self.clear(self.action_frame)
+
+        label = tk.Label(self.main_frame, text="Select transactions file to upload")
+        label.pack(padx=5, pady=5)
+        file_row = tk.Frame(self.main_frame)
+        file_row.pack(side=tk.BOTTOM, padx=10, pady=5)
+        entry = tk.Entry(file_row)
+        entry.pack(side=tk.RIGHT, fill=tk.X)
+        upload_btn = tk.Button(file_row, text="Upload", command=(lambda: [self.upload_file(entry)]))
+        upload_btn.pack(side=tk.LEFT)
+
+        btn = tk.Button(self.action_frame, text="Next",
+                        command=(lambda: [self.check_bank_window()]))
+        btn.pack()
+
+    def upload_file(self, entry):
+        file = filedialog.askopenfilename()
+        try:
+            self.get_transactions(file)
+            entry.insert(0, file)
+        except BaseException as err:
+            app_error(err)
+
 
     def check_bank_window(self):
         self.clear(self.main_frame)
