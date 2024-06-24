@@ -186,9 +186,11 @@ class GoogleClient():
       for item in tran:
         values.append({"userEnteredValue": {"stringValue":item}})
       rows.append({"values": values})
+    testMaySheetId = 2027281898
+    transSheetId = 215826180
     request = {"appendCells":
       {
-        "sheetId": 2027281898,
+        "sheetId": transSheetId,
         "rows": rows,
         "fields": "userEnteredValue"
       }

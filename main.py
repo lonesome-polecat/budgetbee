@@ -49,7 +49,8 @@ class App():
         self.get_started_btn.pack(side=tk.BOTTOM, padx=10, pady=10)
 
         print("Beginning budget helper...")
-        self.get_transactions('../transactions_short.csv')
+        # TODO: Set Bank error
+        # self.get_transactions('../transactions_short.csv')
         # self.get_transactions('../transactions_discover.csv')
         # self.get_categories_from_google()
         self.root.mainloop()
@@ -106,7 +107,7 @@ class App():
             self.POST_DATE = "Posting Date"
 
         self.client.set_indices(bank)
-        self.remove_duplicate_transactions()
+        # self.remove_duplicate_transactions()
 
     def remove_duplicate_transactions(self):
         last = self.client.get_last_transaction("CCCU" if self.isCCCU else "Discover")
