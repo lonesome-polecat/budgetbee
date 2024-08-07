@@ -208,6 +208,7 @@ class GoogleClient():
     self.uploadExpenses()
 
   def updateExpenses(self, tran: list):
+    print("******** UPDATING EXPENSES *********\n")
     cat = tran[self.CAT_INDEX]
     if cat == "Income" or cat == "Unknown":
       return
@@ -217,6 +218,8 @@ class GoogleClient():
       sign = "+" if self.isCCCU else "-"
     if self.categoriesMap.get(cat).value:
       print(self.categoriesMap.get(cat).value)
+      if type(self.categoriesMap.get(cat).value) is int:
+        self.categoriesMap.get(cat).value = str(self.categoriesMap.get(cat).value)
       self.categoriesMap.get(cat).value += sign + tran[self.AMOUNT_INDEX]
     else:
       self.categoriesMap.get(cat).value = "=" + sign + tran[self.AMOUNT_INDEX]
@@ -243,9 +246,13 @@ class GoogleClient():
     last_index = -1
     for category in self.categoriesMap.values():
       print(category.index)
+      print(category.value)
       print(category.note)
       if not category.value:
         continue
+        # Check for values that are not formula values (we just entered them on the spreadsheet) change to formula
+      if type(category.value) is int:
+        category.value = "=" + str(category.value)
       while category.index != last_index + 1:
         rows.append({})
         last_index += 1
