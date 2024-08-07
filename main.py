@@ -2,6 +2,12 @@ try:
     import tkinter as tk
     import tkinter.ttk as ttk
     from tkinter import filedialog
+    import os
+
+    # Set the working directory so program works when clicked in file explorer
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    print("Current Working Directory:", os.getcwd())
+
     import csv
     import google_client as gc
     from datetime import datetime as dt
