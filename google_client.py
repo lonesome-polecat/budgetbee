@@ -1,5 +1,7 @@
 import os.path
 import csv
+import tkinter as tk
+from tkinter import messagebox
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -13,6 +15,7 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 # The ID and range of spreadsheet.
 BUDGET_SHEET = open("google_sheet.txt", "r").read()
 BUDGET_SHEET_RANGE = "May!F3:F31"
+try_again = False
 
 class GoogleClient():
   service = None
@@ -173,6 +176,9 @@ class GoogleClient():
     print(result)
 
   def upload_transactions(self, transactions: list[list[str]]):
+    if try_again:
+      self.uploadExpenses()
+      return
     rows = []
     print(F"categories = {self.categories}")
     for tran in transactions:
@@ -186,8 +192,8 @@ class GoogleClient():
       for item in tran:
         values.append({"userEnteredValue": {"stringValue":item}})
       rows.append({"values": values})
-    testMaySheetId = 2027281898
-    transSheetId = 215826180
+    transSheetId = 2020165441
+    # original / test transSheetId = 215826180
     request = {"appendCells":
       {
         "sheetId": transSheetId,
@@ -280,13 +286,48 @@ class GoogleClient():
       }
     }
     body = {"requests": [request]}
-    result = (
-      self.sheet.batchUpdate(spreadsheetId=BUDGET_SHEET,
-                             body=body
-                             )
-      .execute()
-    )
-    print(result)
+    try:
+      result = (
+        self.sheet.batchUpdate(spreadsheetId=BUDGET_SHEET,
+                               body=body
+                               )
+        .execute()
+      )
+      print(result)
+    except BaseException as e:
+      print(f"Error with upload: {e}")
+      self.fix_data()
+
+  def fix_data(self):
+    # Initialize fix window
+    root = tk.Tk()
+    root.title("Data Editor")
+
+    # Dictionary to store entry widgets for later access
+    entry_dict = {}
+    def update_data():
+      for category, entry_widget in entry_dict.items():
+        for value_key in self.categoriesMap[category]:
+          new_value = entry_widget.get()
+          self.categoriesMap.get(category).value = new_value
+      print("Values have been updated! Try uploading again")
+      messagebox.showinfo("Updated", "Values have been updated! Try uploading again")
+      root.destroy()
+
+    for idx, (category, values) in enumerate(self.categoriesMap.items()):
+      category_label = tk.Label(root, text=category)
+      category_label.grid(row=idx, column=0, padx=10, pady=10)
+
+      entry = tk.Entry(root)
+      entry.insert(0, list(values.values())[0])
+      entry.grid(row=idx, column=1, padx=10, pady=10)
+
+      entry_dict[category] = entry
+
+    # Update button to save the changes
+    update_button = tk.Button(root, text="Update", command=update_data)
+    update_button.grid(row=len(self.categoriesMap), column=0, columnspan=2, pady=20)
+
 
   def get_sheet_names(self):
     sheet = self.service.spreadsheets()
