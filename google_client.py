@@ -177,7 +177,7 @@ class GoogleClient():
 
   def upload_transactions(self, transactions: list[list[str]]):
     if try_again:
-      self.uploadExpenses()
+      self.upload_expenses()
       return
     rows = []
     print(F"categories = {self.categories}")
@@ -192,8 +192,7 @@ class GoogleClient():
       for item in tran:
         values.append({"userEnteredValue": {"stringValue":item}})
       rows.append({"values": values})
-    transSheetId = 2020165441
-    # original / test transSheetId = 215826180
+    transSheetId = 215826180
     request = {"appendCells":
       {
         "sheetId": transSheetId,
@@ -211,7 +210,7 @@ class GoogleClient():
       .execute()
     )
     print(result)
-    self.uploadExpenses()
+    self.upload_expenses()
 
   def updateExpenses(self, tran: list):
     print("******** UPDATING EXPENSES *********\n")
@@ -246,7 +245,7 @@ class GoogleClient():
     # self.uploadExpenses()
     print("ALL DONE!!!")
 
-  def uploadExpenses(self):
+  def upload_expenses(self):
     self.sheet = self.service.spreadsheets()
     rows = []
     last_index = -1
@@ -299,34 +298,44 @@ class GoogleClient():
       self.fix_data()
 
   def fix_data(self):
+    print("Made it here")
     # Initialize fix window
-    root = tk.Tk()
+    root = tk.Toplevel()
     root.title("Data Editor")
 
     # Dictionary to store entry widgets for later access
     entry_dict = {}
+
     def update_data():
       for category, entry_widget in entry_dict.items():
-        for value_key in self.categoriesMap[category]:
-          new_value = entry_widget.get()
-          self.categoriesMap.get(category).value = new_value
+        new_value = entry_widget.get()
+        self.categoriesMap.get(category).value = new_value
       print("Values have been updated! Try uploading again")
-      messagebox.showinfo("Updated", "Values have been updated! Try uploading again")
+      messagebox.showinfo("Updated", "Values have been updated! Uploading again")
       root.destroy()
+      self.upload_expenses()
+
 
     for idx, (category, values) in enumerate(self.categoriesMap.items()):
+      if idx < 13:
+        row = idx
+        col = 0
+      else:
+        row = idx - 13
+        col = 2
       category_label = tk.Label(root, text=category)
-      category_label.grid(row=idx, column=0, padx=10, pady=10)
+      category_label.grid(row=row, column=col, padx=10, pady=10)
 
       entry = tk.Entry(root)
-      entry.insert(0, list(values.values())[0])
-      entry.grid(row=idx, column=1, padx=10, pady=10)
+      entry.insert(0, values.value)
+      entry.grid(row=row, column=col+1, padx=10, pady=10)
 
       entry_dict[category] = entry
 
     # Update button to save the changes
     update_button = tk.Button(root, text="Update", command=update_data)
     update_button.grid(row=len(self.categoriesMap), column=0, columnspan=2, pady=20)
+    root.mainloop()
 
 
   def get_sheet_names(self):
