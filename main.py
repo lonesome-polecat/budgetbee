@@ -138,7 +138,6 @@ class App():
         with open(filename, 'r') as f:
             csvFile = csv.reader(f)
             for i, line in enumerate(csvFile):
-                print(line)
                 if i == 0:
                     for i, header in enumerate(line):
                         self.trans_headers.update({header: i})
@@ -156,6 +155,8 @@ class App():
             self.categories = self.client.get_categories(month)
             self.categories.append("Income")
             self.categories.append("Unknown")
+            self.categories.remove("Leftover")
+            self.categories.remove("Savings Priority")
         except BaseException as err:
             app_error(err)
 
