@@ -1,8 +1,9 @@
-import os.path
+import os
 import csv
 import tkinter as tk
 from tkinter import messagebox
 
+import google.auth.exceptions
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -33,7 +34,7 @@ class GoogleClient():
       self.value = value
       self.note = note
 
-  def connect(self):
+  def connect(self, retry=False):
     """Shows basic usage of the Sheets API.
     Prints values from a sample spreadsheet.
     """
@@ -62,6 +63,12 @@ class GoogleClient():
     except HttpError as err:
       print(err)
       return False
+    except google.auth.exceptions.RefreshError as err:
+      print(err)
+      if not retry:
+        print("Removing expired token and trying to establish auth again...")
+        os.remove("../token.json")
+        self.connect(True)
 
   def set_indices(self, bank):
     if bank == "Discover":

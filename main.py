@@ -1,3 +1,5 @@
+import google.auth.exceptions
+
 try:
     import tkinter as tk
     import tkinter.ttk as ttk
@@ -37,8 +39,14 @@ class App():
         try:
             self.client = gc.GoogleClient()
             self.client.connect()
+        except google.auth.exceptions.RefreshError as err:
+            print("Invalid token. Removing and retrying...")
+            os.remove("../token.json")
+            self.client = gc.GoogleClient()
+            self.client.connect(retry=True)
         except BaseException as err:
             app_error(err)
+            exit(1)
 
         self.root = tk.Tk()
         self.root.title("BudgetBee")
