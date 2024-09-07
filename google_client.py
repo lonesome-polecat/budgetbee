@@ -85,6 +85,7 @@ class GoogleClient():
       self.NOTE_INDEX = 11
 
   def get_last_transaction(self, bank):
+    # Not in use currently
     sheet = self.service.spreadsheets()
     result = sheet.values().get(
       spreadsheetId=BUDGET_SHEET,
@@ -131,7 +132,6 @@ class GoogleClient():
           if cat == "Leftover":
             self.budgetEndIndex = i
             self.savingsStartIndex = i+1
-            continue
           categories.append(cat)
           if len(row.get("values")) > 1 and row.get("values")[1].get("userEnteredValue"):
             catObj = self.CategoryObject(
@@ -150,7 +150,8 @@ class GoogleClient():
       print(categories)
       return categories
     except HttpError as err:
-      print(err)
+      print(f"Something went wrong with fetching the categories: {err}")
+      exit(1)
 
   def test_uploadDataSpreadSheets(self):
     self.sheet = self.service.spreadsheets()

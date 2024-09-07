@@ -146,7 +146,6 @@ class App():
         with open(filename, 'r') as f:
             csvFile = csv.reader(f)
             for i, line in enumerate(csvFile):
-                print(line)
                 if i == 0:
                     for i, header in enumerate(line):
                         self.trans_headers.update({header: i})
@@ -164,6 +163,8 @@ class App():
             self.categories = self.client.get_categories(month)
             self.categories.append("Income")
             self.categories.append("Unknown")
+            self.categories.remove("Leftover")
+            self.categories.remove("Savings Priority")
         except BaseException as err:
             app_error(err)
 
@@ -191,8 +192,8 @@ class App():
 
 
     def start_finances(self):
-        self.make_fin_window()
         self.curr_index = -1
+        self.make_fin_window()
         self.num_trans = len(self.trans_list)
         self.skipped_trans = []
         self.gone_back = False
@@ -232,9 +233,9 @@ class App():
 
         self.next_btn = tk.Button(self.action_frame, text="Next", command=self.next_item)
         self.next_btn.pack(side=tk.RIGHT)
-        self.skip_btn = tk.Button(self.action_frame, text="Ignore", command=(lambda: [self.next_item(True)]))
+        self.skip_btn = tk.Button(self.action_frame, text="Ignore", command=(lambda: [self.next_item(skip=True)]))
         self.skip_btn.pack(side=tk.RIGHT)
-        self.back_btn = tk.Button(self.action_frame, text="Back", state=tk.DISABLED)
+        self.back_btn = tk.Button(self.action_frame, text="Back", command=self.previous_item, state=tk.DISABLED)
         self.back_btn.pack(side=tk.LEFT)
 
     def clear(self, frame: tk.Frame):
@@ -253,6 +254,8 @@ class App():
             print("Updating current index")
             self.curr_index += 1
         else:
+            # TODO: Need to be able to go back on ignored transaction
+            # TODO: Need to be able to autofill category with prev selection if gone_back = True
             self.trans_list.pop(self.curr_index)
             self.num_trans -= 1
             print("\n*** SKIPPED ***\n")
@@ -263,6 +266,26 @@ class App():
             self.confirm_window()
             return
         print("Updating labels")
+        print(self.trans_by_cat)
+        if self.curr_index > 0:
+            self.back_btn.config(state=tk.ACTIVE)
+        self.date_val_label.config(text=self.trans_list[self.curr_index][self.trans_headers[self.POST_DATE]])
+        self.amt_val_label.config(text=self.trans_list[self.curr_index][self.trans_headers["Amount"]])
+        self.desc_val_label.config(text=self.trans_list[self.curr_index][self.trans_headers["Description"]])
+
+    def previous_item(self):
+        print("Going back...")
+        self.curr_index -= 1
+        category = self.trans_list[self.curr_index][self.trans_headers[("Transaction Category" if self.isCCCU else "Category")]]
+        self.category_box.delete(0, "end")
+        self.category_box.insert(0, category)
+        # Reset the data
+        self.trans_by_cat.get(category).pop()
+        if len(self.trans_by_cat.get(category)) < 1:
+            self.trans_by_cat.pop(category)
+        # Reset labels
+        if self.curr_index < 1:
+            self.back_btn.config(state=tk.DISABLED)
         self.date_val_label.config(text=self.trans_list[self.curr_index][self.trans_headers[self.POST_DATE]])
         self.amt_val_label.config(text=self.trans_list[self.curr_index][self.trans_headers["Amount"]])
         self.desc_val_label.config(text=self.trans_list[self.curr_index][self.trans_headers["Description"]])
