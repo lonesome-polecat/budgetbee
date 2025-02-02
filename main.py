@@ -48,6 +48,17 @@ class App():
             app_error(err)
             exit(1)
 
+        # See if user has existing configurations for budget sheet
+        try:
+            with open("bb_config.json", "r") as f:
+                contents = f.read()
+        except FileNotFoundError as err:
+            self.add_configurations()
+        except BaseException as err:
+            app_error(err)
+            exit(1)
+
+
         self.root = tk.Tk()
         self.root.title("BudgetBee")
         self.main_frame = tk.Frame(self.root, width=300)
