@@ -3,7 +3,7 @@
 ***Setup***
 1) Create a file `google_sheet.txt` in the main project directory
 2) Copy and paste your budget sheet's id into `google_sheet.txt` (found in the URL when navigating to the sheet on your browser)
-3) Download `credentials.json` from the Google Developer OAuth clients page (you need to contact the app administrator for help with this step)
+3) Download the credentials file from the Google Developer OAuth clients page (you need to contact the app administrator for help with this step) and rename the file `credentials.json`
 3) Launch the app and give it permissions to modify your google sheets
 4) All done! Enjoy your expedited finances!
 

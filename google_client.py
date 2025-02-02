@@ -223,7 +223,7 @@ class GoogleClient():
   def updateExpenses(self, tran: list):
     print("******** UPDATING EXPENSES *********\n")
     cat = tran[self.CAT_INDEX]
-    if cat == "Income" or cat == "Unknown":
+    if cat == "Income" or cat == "Record Only":
       return
     if self.categoriesMap.get(cat).index < self.savingsStartIndex:
       sign = "-" if self.isCCCU else "+"

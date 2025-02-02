@@ -162,7 +162,7 @@ class App():
         try:
             self.categories = self.client.get_categories(month)
             self.categories.append("Income")
-            self.categories.append("Unknown")
+            self.categories.append("Record Only")
             self.categories.remove("Leftover")
             self.categories.remove("Savings Priority")
         except BaseException as err:
