@@ -16,6 +16,7 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 # The ID and range of spreadsheet.
 BUDGET_SHEET = open("google_sheet.txt", "r").read()
 BUDGET_SHEET_RANGE = "May!F3:F31"
+TRANSACTIONS_GRID_ID = "201602732"
 try_again = False
 
 class GoogleClient():
@@ -200,10 +201,9 @@ class GoogleClient():
       for item in tran:
         values.append({"userEnteredValue": {"stringValue":item}})
       rows.append({"values": values})
-    transSheetId = 215826180
     request = {"appendCells":
       {
-        "sheetId": transSheetId,
+        "sheetId": TRANSACTIONS_GRID_ID,
         "rows": rows,
         "fields": "userEnteredValue"
       }
