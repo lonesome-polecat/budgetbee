@@ -1,4 +1,4 @@
-<h2>BudgetBee - expedite your finances, customize your records, win-win-woohoo</h2>
+<h2>BudgetBee - Expedite your finances</h2>
 
 ***Setup***
 1) Create a file `google_sheet.txt` in the main project directory
