@@ -1,4 +1,5 @@
 import google.auth.exceptions
+import json
 
 try:
     import tkinter as tk
@@ -47,6 +48,15 @@ class App():
         except BaseException as err:
             app_error(err)
             exit(1)
+        finally:
+            try:
+                config_json = open("budget_config.json", "r").read()
+                self.config = json.loads(config_json)
+                self.bank_names = [x["bank_name"] for x in self.config["banks"]]
+                print(self.bank_names)
+            except BaseException as err:
+                app_error(err)
+                exit(1)
 
         self.root = tk.Tk()
         self.root.title("BudgetBee")
@@ -101,9 +111,9 @@ class App():
 
         label = tk.Label(self.main_frame, text="Which bank are you using?")
         label.pack(padx=5, pady=5)
-        bank_selector = ttk.Combobox(self.action_frame, values=["CCCU", "Discover"])
+        bank_selector = ttk.Combobox(self.action_frame, values=self.bank_names)
         bank_selector.pack(padx=5, pady=5)
-        bank_selector.set("CCCU")
+        bank_selector.set(self.bank_names[0])
         btn = tk.Button(self.action_frame, text="Next", command=(lambda: [self.set_bank(bank_selector), self.check_month()]))
         btn.pack()
 
