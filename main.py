@@ -1,5 +1,6 @@
 import google.auth.exceptions
 import json
+import sys
 
 try:
     import tkinter as tk
@@ -11,6 +12,7 @@ try:
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     print("Current Working Directory:", os.getcwd())
 
+    from utils.Bank import Bank
     import csv
     import google_client as gc
     from datetime import datetime as dt
@@ -52,7 +54,7 @@ class App():
             try:
                 config_json = open("budget_config.json", "r").read()
                 self.config = json.loads(config_json)
-                self.bank_names = [x["bank_name"] for x in self.config["banks"]]
+                self.bank_names = [x["name"] for x in self.config["banks"]]
                 print(self.bank_names)
             except BaseException as err:
                 app_error(err)
@@ -119,7 +121,12 @@ class App():
 
     def set_bank(self, bank_selector):
         bank = bank_selector.get()
-        print(bank)
+        # Initialize selected bank
+        bank_json = self.config.get("banks")[self.bank_names.index(bank)]
+        print(bank_json)
+        self.bank = Bank(**bank_json)
+        print(self.bank)
+        print("Got this far")
         if bank == "Discover":
             self.isCCCU = False
             self.isDiscover = True
