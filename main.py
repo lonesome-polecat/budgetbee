@@ -38,6 +38,9 @@ class App():
     isDiscover = False
     POST_DATE = "Posting Date"
 
+    def __init__(self):
+        self.bank = None
+
     def main(self):
         try:
             self.client = gc.GoogleClient()
@@ -102,6 +105,8 @@ class App():
         file = filedialog.askopenfilename()
         try:
             self.get_transactions(file)
+            # self.transactions = self.bank.get_transactions(file)
+            self.client.set_indices(self.bank)
             entry.insert(0, file)
         except BaseException as err:
             app_error(err)
@@ -130,14 +135,12 @@ class App():
         if bank == "Discover":
             self.isCCCU = False
             self.isDiscover = True
-            self.POST_DATE = "Post Date"
         else:
-            bank = "CCCU"
             self.isCCCU = True
             self.isDiscover = False
-            self.POST_DATE = "Posting Date"
+        self.POST_DATE = self.bank.post_date_column
 
-        self.client.set_indices(bank)
+        # self.client.set_indices(bank)
         # self.remove_duplicate_transactions()
 
     def remove_duplicate_transactions(self):
