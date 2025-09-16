@@ -1,5 +1,6 @@
 # Bank.py
 import csv
+from utils.Transaction import Transaction
 
 class Bank:
     """
@@ -12,6 +13,8 @@ class Bank:
     note_column: str
     post_date_column: str
 
+    headers: dict = dict()
+
     cat_index: int
     amt_index: int
     note_index: int
@@ -21,9 +24,37 @@ class Bank:
         self.__dict__.update(bank_json)
 
     def set_indices(self):
-        pass
+        if (len(self.headers) < 3):
+            raise IndexError("Not enough headers")
+        self.cat_index = self.headers.get(self.category_column)
+        self.amt_index = self.headers.get(self.amount_column)
+        self.note_index = self.headers.get(self.note_column)
 
-    def get_transactions(self, filename):
+    def get_transactions_from_csv(self, filename):
+        transactions: list[Transaction] = []
         print("Extracting transactions from csv...")
-        # TODO: Refactor get_transactions
+        with open(filename, 'r') as f:
+            csvFile = csv.reader(f)
+            for i, line in enumerate(csvFile):
+                if i == 0:
+                    for i, header in enumerate(line):
+                        self.headers.update({header: i})
+                else:
+                    # This fields MUST stay in this order - refer to Transaction class
+                    transaction = Transaction([
+                        self.name,
+                        line[self.headers.get(self.amount_column)],
+                        line[self.headers.get(self.category_column)],
+                        line[self.headers.get(self.description_column)],
+                        line[self.headers.get(self.note_column)],
+                        line[self.headers.get(self.post_date_column)],
+                    ])
+                    transactions.append(transaction)
+
+        print(self.headers)
+        # Set indices for
+        self.set_indices()
+
+        # order by date (reverse)
+        return transactions[::-1]
 
