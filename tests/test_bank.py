@@ -36,3 +36,4 @@ class TestBank1:
     def test_bank1_parse_transactions(self, bank1, filename1):
         transactions = bank1.get_transactions_from_csv(filename1)
         assert transactions[0].amount == "-118"
+        assert transactions[-1].amount == "-6.05"
