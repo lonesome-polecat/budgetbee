@@ -1,0 +1,13 @@
+Transaction ID,Posting Date,Effective Date,Transaction Type,Amount,Check Number,Reference Number,Description,Transaction Category,Type,Balance,Memo,Extended Description
+"20250830 126695 605 120,208",8/30/2025,8/30/2025,Debit,-6.05,,39422773,Winco,,POS,4040.79,,Sample extended description
+"20250829 126695 1,216 176,548",8/29/2025,8/29/2025,Debit,-12.16,,39422772,Winco,,POS,4046.84,,Sample extended description
+"20250829 126695 4,300 136,391",8/29/2025,8/29/2025,Debit,-43,,39422767,Sprouts,Food & Dining,POS,4059,,Sample extended description
+"20250829 126695 293,155 133,538",8/29/2025,8/29/2025,Credit,2931.55,,39422771,Paycheck,,Retail ACH,4102,,Sample extended description
+"20250826 126695 600 197,242",8/26/2025,8/26/2025,Debit,-6,,39422769,Notebook,,Card,1380.45,,Sample extended description
+"20250826 126695 351 187,376",8/26/2025,8/26/2025,Debit,-3.51,,39422768,Winco,,POS,1386.45,,Sample extended description
+"20250826 126695 7,715 89,402",8/26/2025,8/26/2025,Debit,-77.15,,39278915,Car Insurance,Auto & Transport,Retail ACH,1389.96,,Sample extended description
+"20250825 126695 11,975 134,589",8/25/2025,8/25/2025,Debit,-119.75,,39247668,Winco,,POS,1467.11,,Sample extended description
+"20250823 126695 3,079 132,951",8/23/2025,8/23/2025,Debit,-30.79,,39247666,Gas,Auto & Transport,POS,1586.86,,Sample extended description
+"20250819 126695 250 192,373",8/19/2025,8/19/2025,Debit,-2.5,,39159421,Transaction Fee,Shopping,Fees,1667.65,,Sample extended description
+"20250819 126695 25,000 192,369",8/19/2025,8/19/2025,Debit,-250,,39159424,Clothing,,Card,1670.15,,Sample extended description
+"20250819 126695 11,800 75,113",8/19/2025,8/19/2025,Debit,-118,,39159423,Health Checkup,,Card,1920.15,,Sample extended description

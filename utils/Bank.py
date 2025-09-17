@@ -24,7 +24,9 @@ class Bank:
         self.__dict__.update(bank_json)
 
     def set_indices(self):
-        if (len(self.headers) < 3):
+        # Headers must already be set using get_transactions_from_csv()
+        # Else raise IndexError
+        if len(self.headers) < 3:
             raise IndexError("Not enough headers")
         self.cat_index = self.headers.get(self.category_column)
         self.amt_index = self.headers.get(self.amount_column)
@@ -41,14 +43,14 @@ class Bank:
                         self.headers.update({header: i})
                 else:
                     # This fields MUST stay in this order - refer to Transaction class
-                    transaction = Transaction([
+                    transaction = Transaction(
                         self.name,
                         line[self.headers.get(self.amount_column)],
                         line[self.headers.get(self.category_column)],
                         line[self.headers.get(self.description_column)],
                         line[self.headers.get(self.note_column)],
                         line[self.headers.get(self.post_date_column)],
-                    ])
+                    )
                     transactions.append(transaction)
 
         print(self.headers)
