@@ -1,5 +1,6 @@
 import os
 import csv
+import json
 import tkinter as tk
 from tkinter import messagebox
 
@@ -14,9 +15,16 @@ from googleapiclient.errors import HttpError
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 # The ID and range of spreadsheet.
-BUDGET_SHEET = open("google_sheet.txt", "r").read()
-BUDGET_SHEET_RANGE = "May!F3:F31"
-TRANSACTIONS_GRID_ID = "201602732"
+try:
+  with open("budget_config.json", "r") as f:
+    config = json.load(f)
+    BUDGET_SHEET = config.get("sheet_id")
+    TRANSACTIONS_GRID_ID = config.get("transactions_gid")
+except Exception as e:
+  print(e)
+  print("Reverting to defaults...")
+  BUDGET_SHEET = open("google_sheet.txt", "r").read()
+  TRANSACTIONS_GRID_ID = "1957578877"
 try_again = False
 
 class GoogleClient():
@@ -120,7 +128,7 @@ class GoogleClient():
       self.sheet = self.service.spreadsheets()
       result = (
         self.sheet
-        .get(spreadsheetId=BUDGET_SHEET, ranges=[f"{month}!F3:G31"],
+        .get(spreadsheetId=BUDGET_SHEET, ranges=[f"{month}!F3:G50"],
              fields="sheets/data/rowData/values/note,sheets/data/rowData/values/userEnteredValue")
         .execute()
       )
@@ -286,7 +294,7 @@ class GoogleClient():
           "startColumnIndex": 6,
           "startRowIndex": 2,
           "endColumnIndex": 7,
-          "endRowIndex": 31
+          "endRowIndex": 50
         },
         "rows": rows,
         "fields": "userEnteredValue"
