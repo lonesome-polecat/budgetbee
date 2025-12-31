@@ -13,7 +13,7 @@ class Bank:
     note_column: str
     post_date_column: str
 
-    headers: dict = dict()
+    headers: dict
 
     cat_index: int
     amt_index: int
@@ -22,6 +22,7 @@ class Bank:
 
     def __init__(self, **bank_json):
         self.__dict__.update(bank_json)
+        self.headers = dict()
 
     def set_indices(self):
         # Headers must already be set using get_transactions_from_csv()

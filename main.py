@@ -14,7 +14,8 @@ try:
 
     from utils.Bank import Bank
     import csv
-    import google_client as gc
+    # import google_client as gc
+    import utils.googleClient as gc
     from datetime import datetime as dt
 except BaseException as err:
     print(f"***ERROR: {err}\n\n Install the necessary packages:")
@@ -43,12 +44,12 @@ class App():
 
     def main(self):
         try:
-            self.client = gc.GoogleClient()
+            self.client = gc.GoogleSheetsClient()
             self.client.connect()
         except google.auth.exceptions.RefreshError as err:
             print("Invalid token. Removing and retrying...")
             os.remove("../token.json")
-            self.client = gc.GoogleClient()
+            self.client = gc.GoogleSheetsClient()
             self.client.connect(retry=True)
         except BaseException as err:
             app_error(err)
@@ -74,7 +75,7 @@ class App():
         label.pack(side=tk.TOP, padx=10, pady=20)
 
         self.get_started_btn = tk.Button(self.action_frame, text="Get Started", command=(
-            lambda: [self.select_transactions_file()]))
+            lambda: [self.check_bank_window()]))
         self.get_started_btn.pack(side=tk.BOTTOM, padx=10, pady=10)
 
         print("Beginning budget helper...")
@@ -98,7 +99,7 @@ class App():
         upload_btn.pack(side=tk.LEFT)
 
         btn = tk.Button(self.action_frame, text="Next",
-                        command=(lambda: [self.check_bank_window()]))
+                        command=(lambda: [self.check_month()]))
         btn.pack()
 
     def upload_file(self, entry):
@@ -121,7 +122,7 @@ class App():
         bank_selector = ttk.Combobox(self.action_frame, values=self.bank_names)
         bank_selector.pack(padx=5, pady=5)
         bank_selector.set(self.bank_names[0])
-        btn = tk.Button(self.action_frame, text="Next", command=(lambda: [self.set_bank(bank_selector), self.check_month()]))
+        btn = tk.Button(self.action_frame, text="Next", command=(lambda: [self.set_bank(bank_selector), self.select_transactions_file()]))
         btn.pack()
 
     def set_bank(self, bank_selector):
@@ -163,17 +164,23 @@ class App():
 
     def get_transactions(self, filename):
         print("Extracting transactions from csv...")
-        with open(filename, 'r') as f:
-            csvFile = csv.reader(f)
-            for i, line in enumerate(csvFile):
-                if i == 0:
-                    for i, header in enumerate(line):
-                        self.trans_headers.update({header: i})
-                else:
-                    self.trans_list.append(line)
-            print(self.trans_headers)
-            print(self.trans_list)
-            self.trans_list = self.trans_list[::-1]
+        self.trans_list = self.bank.get_transactions_from_csv(filename)
+        self.trans_headers = self.bank.headers
+        # Now trans_list is populated and ordered by date (reverse)
+
+    # def get_transactions_old(self, filename):
+    #     print("Extracting transactions from csv...")
+    #     with open(filename, 'r') as f:
+    #         csvFile = csv.reader(f)
+    #         for i, line in enumerate(csvFile):
+    #             if i == 0:
+    #                 for i, header in enumerate(line):
+    #                     self.trans_headers.update({header: i})
+    #             else:
+    #                 self.trans_list.append(line)
+    #         print(self.trans_headers)
+    #         print(self.trans_list)
+    #         self.trans_list = self.trans_list[::-1]
         # Now trans_list is populated and ordered by date (reverse)
 
     def get_categories_from_google(self, month):
@@ -265,7 +272,7 @@ class App():
     def next_item(self, skip=False):
         if not skip:
             category = self.category_box.get()
-            self.trans_list[self.curr_index][self.trans_headers[("Transaction Category" if self.isCCCU else "Category")]] = category
+            self.trans_list[self.curr_index].category = category
             print(self.trans_list[self.curr_index])
             if not self.trans_by_cat.get(category):
                 self.trans_by_cat.update({category: []})
@@ -289,14 +296,14 @@ class App():
         print(self.trans_by_cat)
         if self.curr_index > 0:
             self.back_btn.config(state=tk.ACTIVE)
-        self.date_val_label.config(text=self.trans_list[self.curr_index][self.trans_headers[self.POST_DATE]])
-        self.amt_val_label.config(text=self.trans_list[self.curr_index][self.trans_headers["Amount"]])
-        self.desc_val_label.config(text=self.trans_list[self.curr_index][self.trans_headers["Description"]])
+        self.date_val_label.config(text=self.trans_list[self.curr_index].post_date)
+        self.amt_val_label.config(text=self.trans_list[self.curr_index].amount)
+        self.desc_val_label.config(text=self.trans_list[self.curr_index].description)
 
     def previous_item(self):
         print("Going back...")
         self.curr_index -= 1
-        category = self.trans_list[self.curr_index][self.trans_headers[("Transaction Category" if self.isCCCU else "Category")]]
+        category = self.trans_list[self.curr_index].category
         self.category_box.delete(0, "end")
         self.category_box.insert(0, category)
         # Reset the data
@@ -306,17 +313,17 @@ class App():
         # Reset labels
         if self.curr_index < 1:
             self.back_btn.config(state=tk.DISABLED)
-        self.date_val_label.config(text=self.trans_list[self.curr_index][self.trans_headers[self.POST_DATE]])
-        self.amt_val_label.config(text=self.trans_list[self.curr_index][self.trans_headers["Amount"]])
-        self.desc_val_label.config(text=self.trans_list[self.curr_index][self.trans_headers["Description"]])
+        self.date_val_label.config(text=self.trans_list[self.curr_index].post_date)
+        self.amt_val_label.config(text=self.trans_list[self.curr_index].amount)
+        self.desc_val_label.config(text=self.trans_list[self.curr_index].description)
 
     def set_category(self, i, trans, category, notes=None):
         # Update both sets of data in parallel
         trans["category"] = category
-        self.trans_list[i][self.trans_headers["category"]] = category
+        self.trans_list[i].category = category
         if notes:
             trans["notes"] = notes
-            self.trans_list[i][self.trans_headers["notes"]] = notes
+            self.trans_list[i].note = notes
         self.trans_by_cat[category].append(trans)
 
     def confirm_window(self):
@@ -348,15 +355,16 @@ class App():
 
     def save_backup_csv(self):
         # This works - leaves a blank row in between each row though
-        try:
-            with open(f"updated_transx_bak.csv", "w") as f:
-                writer = csv.writer(f)
-                writer.writerow(self.trans_headers.keys())
-                writer.writerows(self.trans_list)
-            return True
-        except BaseException as err:
-            print(f"Error: {err}")
-            return False
+        return True
+        # try:
+        #     with open(f"updated_transx_bak.csv", "w") as f:
+        #         writer = csv.writer(f)
+        #         writer.writerow(self.trans_headers.keys())
+        #         writer.writerows(self.trans_list)
+        #     return True
+        # except BaseException as err:
+        #     print(f"Error: {err}")
+        #     return False
 
 
 if __name__ == "__main__":
