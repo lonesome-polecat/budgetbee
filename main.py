@@ -35,8 +35,6 @@ class App():
     trans_by_cat = dict()
     categories = dict()
     updateCatObject = dict()
-    isCCCU = True
-    isDiscover = False
     POST_DATE = "Posting Date"
 
     def __init__(self):
@@ -131,36 +129,29 @@ class App():
         bank_json = self.config.get("banks")[self.bank_names.index(bank)]
         print(bank_json)
         self.bank = Bank(**bank_json)
-        print(self.bank)
         print("Got this far")
-        if bank == "Discover":
-            self.isCCCU = False
-            self.isDiscover = True
-        else:
-            self.isCCCU = True
-            self.isDiscover = False
         self.POST_DATE = self.bank.post_date_column
 
         # self.client.set_indices(bank)
         # self.remove_duplicate_transactions()
 
-    def remove_duplicate_transactions(self):
-        last = self.client.get_last_transaction("CCCU" if self.isCCCU else "Discover")
-        if not last:
-            return
-        try:
-            last_date = dt.strptime(last[self.trans_headers[self.POST_DATE]], "%m/%d/%Y")
-        except BaseException as err:
-            app_error("Wrong bank")
-        for i, tran in enumerate(self.trans_list):
-            tran_date = dt.strptime(tran[self.trans_headers[self.POST_DATE]], "%m/%d/%Y")
-            print(tran)
-            if tran_date < last_date:
-                continue
-            else:
-                self.trans_list = self.trans_list[i:]
-                print(self.trans_list)
-                break
+    # def remove_duplicate_transactions(self):
+    #     last = self.client.get_last_transaction("CCCU" if self.isCCCU else "Discover")
+    #     if not last:
+    #         return
+    #     try:
+    #         last_date = dt.strptime(last[self.trans_headers[self.POST_DATE]], "%m/%d/%Y")
+    #     except BaseException as err:
+    #         app_error("Wrong bank")
+    #     for i, tran in enumerate(self.trans_list):
+    #         tran_date = dt.strptime(tran[self.trans_headers[self.POST_DATE]], "%m/%d/%Y")
+    #         print(tran)
+    #         if tran_date < last_date:
+    #             continue
+    #         else:
+    #             self.trans_list = self.trans_list[i:]
+    #             print(self.trans_list)
+    #             break
 
     def get_transactions(self, filename):
         print("Extracting transactions from csv...")
