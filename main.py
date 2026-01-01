@@ -35,7 +35,6 @@ class App():
     trans_by_cat = dict()
     categories = dict()
     updateCatObject = dict()
-    POST_DATE = "Posting Date"
 
     def __init__(self):
         self.bank = None
@@ -130,7 +129,6 @@ class App():
         print(bank_json)
         self.bank = Bank(**bank_json)
         print("Got this far")
-        self.POST_DATE = self.bank.post_date_column
 
         # self.client.set_indices(bank)
         # self.remove_duplicate_transactions()
@@ -179,7 +177,7 @@ class App():
         print("Getting categories from google sheets...")
         try:
             self.categories = self.client.get_categories(month)
-            self.categories.append("Income")
+            self.categories.append("Income")  # TODO: remove and put these categories in config
             self.categories.append("Record Only")
             self.categories.remove("Leftover")
             self.categories.remove("Savings Priority")
