@@ -76,10 +76,6 @@ class App():
         self.get_started_btn.pack(side=tk.BOTTOM, padx=10, pady=10)
 
         print("Beginning budget helper...")
-        # TODO: Set Bank error
-        # self.get_transactions('../transactions_short.csv')
-        # self.get_transactions('../transactions_discover.csv')
-        # self.get_categories_from_google()
         self.root.mainloop()
 
     def select_transactions_file(self):
@@ -102,8 +98,8 @@ class App():
     def upload_file(self, entry):
         file = filedialog.askopenfilename()
         try:
-            self.get_transactions(file)
-            # self.transactions = self.bank.get_transactions(file)
+            print("Extracting transactions from csv...")
+            self.trans_list = self.bank.get_transactions_from_csv(file)
             self.client.set_indices(self.bank)
             entry.insert(0, file)
         except BaseException as err:
@@ -129,48 +125,6 @@ class App():
         print(bank_json)
         self.bank = Bank(**bank_json)
         print("Got this far")
-
-        # self.client.set_indices(bank)
-        # self.remove_duplicate_transactions()
-
-    # def remove_duplicate_transactions(self):
-    #     last = self.client.get_last_transaction("CCCU" if self.isCCCU else "Discover")
-    #     if not last:
-    #         return
-    #     try:
-    #         last_date = dt.strptime(last[self.trans_headers[self.POST_DATE]], "%m/%d/%Y")
-    #     except BaseException as err:
-    #         app_error("Wrong bank")
-    #     for i, tran in enumerate(self.trans_list):
-    #         tran_date = dt.strptime(tran[self.trans_headers[self.POST_DATE]], "%m/%d/%Y")
-    #         print(tran)
-    #         if tran_date < last_date:
-    #             continue
-    #         else:
-    #             self.trans_list = self.trans_list[i:]
-    #             print(self.trans_list)
-    #             break
-
-    def get_transactions(self, filename):
-        print("Extracting transactions from csv...")
-        self.trans_list = self.bank.get_transactions_from_csv(filename)
-        self.trans_headers = self.bank.headers
-        # Now trans_list is populated and ordered by date (reverse)
-
-    # def get_transactions_old(self, filename):
-    #     print("Extracting transactions from csv...")
-    #     with open(filename, 'r') as f:
-    #         csvFile = csv.reader(f)
-    #         for i, line in enumerate(csvFile):
-    #             if i == 0:
-    #                 for i, header in enumerate(line):
-    #                     self.trans_headers.update({header: i})
-    #             else:
-    #                 self.trans_list.append(line)
-    #         print(self.trans_headers)
-    #         print(self.trans_list)
-    #         self.trans_list = self.trans_list[::-1]
-        # Now trans_list is populated and ordered by date (reverse)
 
     def get_categories_from_google(self, month):
         # call Google API with creds
@@ -322,9 +276,9 @@ class App():
         confirm_label = tk.Label(self.main_frame, text="All finished! Do you want to attempt to upload to Google Sheets?")
         confirm_label.pack()
 
-        yes_btn = tk.Button(self.action_frame, text="Yes", command=(lambda : [self.save_backup_csv(), self.uploadToGoogle(), self.root.destroy()]))
+        yes_btn = tk.Button(self.action_frame, text="Yes", command=(lambda : [self.uploadToGoogle(), self.root.destroy()]))
         yes_btn.pack(side=tk.RIGHT, padx=5, pady=5)
-        no_btn = tk.Button(self.action_frame, text="No", command=(lambda : [self.save_backup_csv(), self.root.destroy()]))
+        no_btn = tk.Button(self.action_frame, text="No", command=(lambda : [self.root.destroy()]))
         no_btn.pack(side=tk.LEFT, padx=5, pady=5)
 
     def uploadToGoogle(self):
@@ -341,19 +295,6 @@ class App():
             total += trans['amount']
 
         return note, total
-
-    def save_backup_csv(self):
-        # This works - leaves a blank row in between each row though
-        return True
-        # try:
-        #     with open(f"updated_transx_bak.csv", "w") as f:
-        #         writer = csv.writer(f)
-        #         writer.writerow(self.trans_headers.keys())
-        #         writer.writerows(self.trans_list)
-        #     return True
-        # except BaseException as err:
-        #     print(f"Error: {err}")
-        #     return False
 
 
 if __name__ == "__main__":
