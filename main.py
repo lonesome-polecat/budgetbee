@@ -208,6 +208,7 @@ class App():
         self.category_frame.pack(padx=5, pady=5)
 
         self.split_frame = tk.Frame(self.category_frame)
+        self.make_split_frame()
 
         self.category_box = ttk.Combobox(self.category_frame, values=self.categories)
         self.category_box.pack(side=tk.TOP, padx=10, pady=10)
@@ -219,13 +220,7 @@ class App():
         self.back_btn = tk.Button(self.action_frame, text="Back", command=self.previous_item, state=tk.DISABLED)
         self.back_btn.pack(side=tk.LEFT)
 
-    def show_split_amounts(self):
-        self.split_current = True
-        self.split_frame.pack()
-
-        # Hide the main category box
-        self.category_box.pack_forget()
-
+    def make_split_frame(self):
         # Reminder
         reminder_label = tk.Label(self.split_frame, text="Remember to add negative sign (-) for CCCU", fg="red")
         reminder_label.pack(padx=5, pady=10)
@@ -257,6 +252,12 @@ class App():
         second_split_category_label.pack(side=tk.LEFT, padx=5, pady=10)
         self.second_split_category_box = ttk.Combobox(self.second_split_amount_frame, values=self.categories)
         self.second_split_category_box.pack(side=tk.LEFT, padx=5, pady=10)
+
+    def show_split_amounts(self):
+        # Hide the main category box
+        self.category_box.pack_forget()
+        self.split_current = True
+        self.split_frame.pack()
 
     def clear(self, frame: tk.Frame):
         for w in frame.winfo_children():
