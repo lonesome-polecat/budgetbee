@@ -204,9 +204,12 @@ class App():
         self.desc_val_label = tk.Label(self.desc_row)
         self.desc_val_label.pack(side=tk.RIGHT, padx=5, pady=10)
 
-        self.split_frame = tk.Frame(self.action_frame)
+        self.category_frame = tk.Frame(self.main_frame)
+        self.category_frame.pack(padx=5, pady=5)
 
-        self.category_box = ttk.Combobox(self.action_frame, values=self.categories)
+        self.split_frame = tk.Frame(self.category_frame)
+
+        self.category_box = ttk.Combobox(self.category_frame, values=self.categories)
         self.category_box.pack(side=tk.TOP, padx=10, pady=10)
 
         self.next_btn = tk.Button(self.action_frame, text="Next", command=self.next_item)
@@ -223,16 +226,20 @@ class App():
         # Hide the main category box
         self.category_box.pack_forget()
 
+        # Reminder
+        reminder_label = tk.Label(self.split_frame, text="Remember to add negative sign (-) for CCCU", fg="red")
+        reminder_label.pack(padx=5, pady=10)
+
         # First split row
         self.first_split_amount_frame = tk.LabelFrame(self.split_frame, text="Amount 1")
         self.first_split_amount_frame.pack()
 
-        first_amt_label = tk.Label(self.first_split_amount_frame, text="Amount 1:")
+        first_amt_label = tk.Label(self.first_split_amount_frame, text="Amount:")
         first_amt_label.pack(side=tk.LEFT, padx=5, pady=10)
         self.first_split_amount_box = tk.Entry(self.first_split_amount_frame)
         self.first_split_amount_box.pack(side=tk.LEFT, padx=5, pady=10)
 
-        first_split_category_label = tk.Label(self.first_split_amount_frame, text="Category 1:")
+        first_split_category_label = tk.Label(self.first_split_amount_frame, text="Category:")
         first_split_category_label.pack(side=tk.LEFT, padx=5, pady=10)
         self.first_split_category_box = ttk.Combobox(self.first_split_amount_frame, values=self.categories)
         self.first_split_category_box.pack(side=tk.LEFT, padx=5, pady=10)
@@ -241,12 +248,12 @@ class App():
         self.second_split_amount_frame = tk.LabelFrame(self.split_frame, text="Amount 2")
         self.second_split_amount_frame.pack()
 
-        second_amt_label = tk.Label(self.second_split_amount_frame, text="Amount 2:")
+        second_amt_label = tk.Label(self.second_split_amount_frame, text="Amount:")
         second_amt_label.pack(side=tk.LEFT, padx=5, pady=10)
         self.second_split_amount_box = tk.Entry(self.second_split_amount_frame)
         self.second_split_amount_box.pack(side=tk.LEFT, padx=5, pady=10)
 
-        second_split_category_label = tk.Label(self.second_split_amount_frame, text="Category 2:")
+        second_split_category_label = tk.Label(self.second_split_amount_frame, text="Category:")
         second_split_category_label.pack(side=tk.LEFT, padx=5, pady=10)
         self.second_split_category_box = ttk.Combobox(self.second_split_amount_frame, values=self.categories)
         self.second_split_category_box.pack(side=tk.LEFT, padx=5, pady=10)
