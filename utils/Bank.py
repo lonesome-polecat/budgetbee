@@ -12,6 +12,7 @@ class Bank:
     description_column: str
     note_column: str
     post_date_column: str
+    sign: str
 
     headers: dict
 

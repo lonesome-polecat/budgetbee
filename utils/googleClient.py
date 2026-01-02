@@ -45,8 +45,6 @@ class GoogleSheetsClient(client):
     CAT_INDEX = 8
     AMOUNT_INDEX = 4
     NOTE_INDEX = 11
-    isCCCU = True
-    isDiscover = False
     bank = None
 
     class CategoryObject:
@@ -190,9 +188,9 @@ class GoogleSheetsClient(client):
         if cat == "Income" or cat == "Record Only":
             return
         if self.categoriesMap.get(cat).index < self.savingsStartIndex:
-            sign = "-" if self.isCCCU else "+"
+            sign = self.expenses_sign
         else:
-            sign = "+" if self.isCCCU else "-"
+            sign = self.savings_sign
         if self.categoriesMap.get(cat).value:
             print(self.categoriesMap.get(cat).value)
             if type(self.categoriesMap.get(cat).value) is int:
@@ -306,17 +304,7 @@ class GoogleSheetsClient(client):
             })
         print(self.monthsMap)
 
-    def set_indices(self, bank: Bank):
-        if bank.name == "Discover":
-            self.isDiscover = True
-            self.isCCCU = False
-            self.CAT_INDEX = 4
-            self.AMOUNT_INDEX = 3
-            self.NOTE_INDEX = 5
-        else:
-            self.isDiscover = False
-            self.isCCCU = True
-            self.CAT_INDEX = 8
-            self.AMOUNT_INDEX = 4
-            self.NOTE_INDEX = 11
+    def set_positive_or_negative(self, bank: Bank):
+        self.expenses_sign = bank.sign
+        self.savings_sign = "-" if bank.sign == "+" else "+"
 

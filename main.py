@@ -103,7 +103,7 @@ class App():
         try:
             print("Extracting transactions from csv...")
             self.trans_list = self.bank.get_transactions_from_csv(file)
-            self.client.set_indices(self.bank)
+            self.client.set_positive_or_negative(self.bank)
             entry.insert(0, file)
         except BaseException as err:
             app_error(err)
@@ -222,7 +222,9 @@ class App():
 
     def make_split_frame(self):
         # Reminder
-        reminder_label = tk.Label(self.split_frame, text="Remember to add negative sign (-) for CCCU", fg="red")
+        reminder_label = tk.Label(self.split_frame,
+                                  text="Remember to add negative sign (-)" if self.bank.sign == "-" else "",
+                                  fg="red")
         reminder_label.pack(padx=5, pady=10)
 
         # First split row
