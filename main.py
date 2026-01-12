@@ -271,7 +271,7 @@ class App():
         if not skip:
             category = self.category_box.get()
             self.trans_list[self.curr_index].category = category
-            print(self.trans_list[self.curr_index])
+            print([self.trans_list[self.curr_index].description, self.trans_list[self.curr_index].category])
             print("Updating current index")
             self.curr_index += 1
         else:
@@ -292,6 +292,7 @@ class App():
         self.date_val_label.config(text=self.trans_list[self.curr_index].post_date)
         self.amt_val_label.config(text=self.trans_list[self.curr_index].amount)
         self.desc_val_label.config(text=self.trans_list[self.curr_index].description)
+        self.category_box.set(self.trans_list[self.curr_index].category)
 
     def split_transaction(self):
         self.split_current = False
@@ -342,6 +343,7 @@ class App():
         self.desc_val_label.config(text=self.trans_list[self.curr_index].description)
 
     def confirm_window(self):
+        # TODO: Add 'back' button to revise last transaction or any transactions
         self.clear(self.main_frame)
         self.clear(self.action_frame)
 
