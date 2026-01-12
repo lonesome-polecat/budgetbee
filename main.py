@@ -34,7 +34,6 @@ class App():
     client = None
     trans_headers = dict()
     trans_list = []
-    trans_by_cat = dict()
     categories = dict()
     updateCatObject = dict()
 
@@ -273,10 +272,6 @@ class App():
             category = self.category_box.get()
             self.trans_list[self.curr_index].category = category
             print(self.trans_list[self.curr_index])
-            if not self.trans_by_cat.get(category):
-                self.trans_by_cat.update({category: []})
-            # This does not allow going back yet
-            self.trans_by_cat.get(category).append(self.trans_list[self.curr_index])
             print("Updating current index")
             self.curr_index += 1
         else:
@@ -292,7 +287,6 @@ class App():
             self.confirm_window()
             return
         print("Updating labels")
-        print(self.trans_by_cat)
         if self.curr_index > 0:
             self.back_btn.config(state=tk.ACTIVE)
         self.date_val_label.config(text=self.trans_list[self.curr_index].post_date)
@@ -339,25 +333,13 @@ class App():
         category = self.trans_list[self.curr_index].category
         self.category_box.delete(0, "end")
         self.category_box.insert(0, category)
-        # Reset the data
-        self.trans_by_cat.get(category).pop()
-        if len(self.trans_by_cat.get(category)) < 1:
-            self.trans_by_cat.pop(category)
+
         # Reset labels
         if self.curr_index < 1:
             self.back_btn.config(state=tk.DISABLED)
         self.date_val_label.config(text=self.trans_list[self.curr_index].post_date)
         self.amt_val_label.config(text=self.trans_list[self.curr_index].amount)
         self.desc_val_label.config(text=self.trans_list[self.curr_index].description)
-
-    def set_category(self, i, trans, category, notes=None):
-        # Update both sets of data in parallel
-        trans["category"] = category
-        self.trans_list[i].category = category
-        if notes:
-            trans["notes"] = notes
-            self.trans_list[i].note = notes
-        self.trans_by_cat[category].append(trans)
 
     def confirm_window(self):
         self.clear(self.main_frame)
