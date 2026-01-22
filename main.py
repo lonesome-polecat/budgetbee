@@ -295,36 +295,27 @@ class App():
         self.split_current = False
         curr_trans = self.trans_list[self.curr_index]
         self.trans_list.pop(self.curr_index)
-        transaction_one = Transaction(
-            curr_trans.bank_name,
-             self.first_split_amount_box.get(),
-             self.first_split_category_box.get(),
-             curr_trans.description,
-             curr_trans.note,
-             curr_trans.post_date
-        )
-        transaction_two = Transaction(
-            curr_trans.bank_name,
-             self.second_split_amount_box.get(),
-             self.second_split_category_box.get(),
-             curr_trans.description,
-             curr_trans.note,
-             curr_trans.post_date
-        )
-        self.trans_list.insert(self.curr_index, transaction_two)
-        self.trans_list.insert(self.curr_index, transaction_one)
 
-        self.num_trans += 1
-        self.category_box.delete(0, "end")
-        self.category_box.insert(0, self.first_split_category_box.get())
-        self.next_item()
-        self.category_box.delete(0, "end")
-        self.category_box.insert(0, self.second_split_category_box.get())
-        self.next_item()
+        # Increase the number of total transactions
+        self.num_trans += len(self.sub_transactions)
 
-        self.split_frame.pack_forget()
+        for sub_trans in self.sub_transactions:
+            transaction = Transaction(
+                curr_trans.bank_name,
+                 sub_trans["amount"].get(),
+                 sub_trans["category"].get(),
+                 curr_trans.description,
+                 curr_trans.note,
+                 curr_trans.post_date
+            )
+            self.trans_list.insert(self.curr_index, transaction)
+            self.category_box.delete(0, "end")
+            self.category_box.insert(0, transaction.category)
+            self.next_item()
+
+        self.clear(self.sub_transactions_frame)
+        self.split_button.configure(text="Split?")
         self.category_box.pack()
-
 
     def previous_item(self):
         print("Going back...")
