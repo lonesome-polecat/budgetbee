@@ -208,7 +208,6 @@ class App():
         self.category_frame.pack(padx=5, pady=5)
 
         self.sub_transactions_frame = tk.Frame(self.category_frame)
-        self.sub_transactions_frame.pack(side=tk.TOP, padx=5, pady=5)
 
         self.category_box = ttk.Combobox(self.category_frame, values=self.categories)
         self.category_box.pack(side=tk.TOP, padx=10, pady=10)
@@ -225,6 +224,8 @@ class App():
         if not self.split_current:
             # Hide the main category box
             self.category_box.pack_forget()
+            # Display the new frame
+            self.sub_transactions_frame.pack(side=tk.TOP, padx=5, pady=5)
             # Add Reminder
             reminder_label = tk.Label(self.sub_transactions_frame,
                                       text="Remember to add negative sign (-)" if self.bank.sign == "-" else "",
@@ -297,7 +298,7 @@ class App():
         self.trans_list.pop(self.curr_index)
 
         # Increase the number of total transactions
-        self.num_trans += len(self.sub_transactions)
+        self.num_trans += len(self.sub_transactions) - 1
 
         for sub_trans in self.sub_transactions:
             transaction = Transaction(
@@ -309,13 +310,18 @@ class App():
                  curr_trans.post_date
             )
             self.trans_list.insert(self.curr_index, transaction)
-            self.category_box.delete(0, "end")
-            self.category_box.insert(0, transaction.category)
-            self.next_item()
 
+        # Forward cursor to next transaction
+        self.curr_index += len(self.sub_transactions) - 1
+        self.sub_transactions.clear()
         self.clear(self.sub_transactions_frame)
+        self.sub_transactions_frame.pack_forget()
         self.split_button.configure(text="Split?")
         self.category_box.pack()
+
+        # Switch to next transaction
+        self.category_box.set(self.trans_list[self.curr_index].category)
+        self.next_item()
 
     def previous_item(self):
         print("Going back...")
