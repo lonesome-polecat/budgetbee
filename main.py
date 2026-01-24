@@ -40,6 +40,7 @@ class App():
     def __init__(self):
         self.bank = None
         self.split_current = False
+        self.sub_transactions = []
 
     def main(self):
         try:
@@ -193,7 +194,7 @@ class App():
         desc_label = tk.Label(self.desc_row, text="Description :")
         desc_label.pack(side=tk.LEFT, padx=5, pady=10)
 
-        self.split_button = tk.Button(self.amt_row, text="Split?", fg="grey", command=self.show_split_amounts)
+        self.split_button = tk.Button(self.amt_row, text="Split?", fg="grey", command=self.add_sub_transaction)
         self.split_button.pack(side=tk.RIGHT, padx=5, pady=10)
 
         self.date_val_label = tk.Label(self.date_row)
@@ -206,89 +207,94 @@ class App():
         self.category_frame = tk.Frame(self.main_frame)
         self.category_frame.pack(padx=5, pady=5)
 
-        self.split_frame = tk.Frame(self.category_frame)
-        self.make_split_frame()
+        self.sub_transactions_frame = tk.Frame(self.category_frame)
 
         self.category_box = ttk.Combobox(self.category_frame, values=self.categories)
         self.category_box.pack(side=tk.TOP, padx=10, pady=10)
 
         self.next_btn = tk.Button(self.action_frame, text="Next", command=self.next_item)
         self.next_btn.pack(side=tk.RIGHT)
-        self.skip_btn = tk.Button(self.action_frame, text="Ignore", command=(lambda: [self.next_item(skip=True)]))
+        self.skip_btn = tk.Button(self.action_frame, text="Ignore", command=self.ignore)
         self.skip_btn.pack(side=tk.RIGHT)
         self.back_btn = tk.Button(self.action_frame, text="Back", command=self.previous_item, state=tk.DISABLED)
         self.back_btn.pack(side=tk.LEFT)
-
-    def make_split_frame(self):
-        # Reminder
-        reminder_label = tk.Label(self.split_frame,
-                                  text="Remember to add negative sign (-)" if self.bank.sign == "-" else "",
-                                  fg="red")
-        reminder_label.pack(padx=5, pady=10)
-
-        # First split row
-        self.first_split_amount_frame = tk.LabelFrame(self.split_frame, text="Amount 1")
-        self.first_split_amount_frame.pack()
-
-        first_amt_label = tk.Label(self.first_split_amount_frame, text="Amount:")
-        first_amt_label.pack(side=tk.LEFT, padx=5, pady=10)
-        self.first_split_amount_box = tk.Entry(self.first_split_amount_frame)
-        self.first_split_amount_box.pack(side=tk.LEFT, padx=5, pady=10)
-
-        first_split_category_label = tk.Label(self.first_split_amount_frame, text="Category:")
-        first_split_category_label.pack(side=tk.LEFT, padx=5, pady=10)
-        self.first_split_category_box = ttk.Combobox(self.first_split_amount_frame, values=self.categories)
-        self.first_split_category_box.pack(side=tk.LEFT, padx=5, pady=10)
-
-        # Second split row
-        self.second_split_amount_frame = tk.LabelFrame(self.split_frame, text="Amount 2")
-        self.second_split_amount_frame.pack()
-
-        second_amt_label = tk.Label(self.second_split_amount_frame, text="Amount:")
-        second_amt_label.pack(side=tk.LEFT, padx=5, pady=10)
-        self.second_split_amount_box = tk.Entry(self.second_split_amount_frame)
-        self.second_split_amount_box.pack(side=tk.LEFT, padx=5, pady=10)
-
-        second_split_category_label = tk.Label(self.second_split_amount_frame, text="Category:")
-        second_split_category_label.pack(side=tk.LEFT, padx=5, pady=10)
-        self.second_split_category_box = ttk.Combobox(self.second_split_amount_frame, values=self.categories)
-        self.second_split_category_box.pack(side=tk.LEFT, padx=5, pady=10)
-
-    def show_split_amounts(self):
-        # Hide the main category box
-        self.category_box.pack_forget()
+        
+    def add_sub_transaction(self):
+        # Do this the first time
+        if not self.split_current:
+            # Hide the main category box
+            self.category_box.pack_forget()
+            # Display the new frame
+            self.sub_transactions_frame.pack(side=tk.TOP, padx=5, pady=5)
+            # Add Reminder
+            reminder_label = tk.Label(self.sub_transactions_frame,
+                                      text="Remember to add negative sign (-)" if self.bank.sign == "-" else "",
+                                      fg="red")
+            reminder_label.pack(side=tk.TOP, padx=5, pady=10)
+        
         self.split_current = True
-        self.split_frame.pack()
+        self.make_sub_transaction_frame(self.sub_transactions_frame)
+        self.split_button.configure(text="Split again?")
+
+    def make_sub_transaction_frame(self, parent_frame):
+        index = len(self.sub_transactions) + 1
+        sub_trans_amount_frame = tk.LabelFrame(parent_frame, text=("Sub transaction " + str(index)))
+        sub_trans_amount_frame.pack()
+
+        sub_trans_amt_label = tk.Label(sub_trans_amount_frame, text="Amount:")
+        sub_trans_amt_label.pack(side=tk.LEFT, padx=5, pady=10)
+        sub_trans_amount_box = tk.Entry(sub_trans_amount_frame)
+        sub_trans_amount_box.pack(side=tk.LEFT, padx=5, pady=10)
+
+        sub_trans_category_label = tk.Label(sub_trans_amount_frame, text="Category:")
+        sub_trans_category_label.pack(side=tk.LEFT, padx=5, pady=10)
+        sub_trans_category_box = ttk.Combobox(sub_trans_amount_frame, values=self.categories)
+        sub_trans_category_box.pack(side=tk.LEFT, padx=5, pady=10)
+
+        # Add new sub transaction widgets to top-level sub_transaction_widgets list
+        self.sub_transactions.append({
+            "amount": sub_trans_amount_box,
+            "category": sub_trans_category_box,
+            "note" : ""
+        })
 
     def clear(self, frame: tk.Frame):
         for w in frame.winfo_children():
             w.destroy()
 
-    def next_item(self, skip=False):
+    def next_item(self):
         if self.split_current:
             self.split_transaction()
             return
-        if not skip:
-            category = self.category_box.get()
-            self.trans_list[self.curr_index].category = category
-            print([self.trans_list[self.curr_index].description, self.trans_list[self.curr_index].category])
-            print("Updating current index")
-            self.curr_index += 1
-        else:
-            # TODO: Need to be able to go back on ignored transaction
-            # TODO: Need to be able to autofill category with prev selection if gone_back = True
-            self.trans_list.pop(self.curr_index)
-            self.num_trans -= 1
-            print("\n*** SKIPPED ***\n")
-            print(self.trans_list)
-            print(self.num_trans)
-            print(self.curr_index)
+        category = self.category_box.get()
+        self.trans_list[self.curr_index].category = category
+        print([self.trans_list[self.curr_index].description, self.trans_list[self.curr_index].category])
+        print("Updating current index")
+        self.curr_index += 1
+
         if self.curr_index == self.num_trans:
             self.confirm_window()
             return
-        print("Updating labels")
         if self.curr_index > 0:
             self.back_btn.config(state=tk.ACTIVE)
+        self.update_ui()
+
+    def ignore(self):
+        # TODO: Need to be able to go back on ignored transaction
+        # TODO: Need to be able to autofill category with prev selection if gone_back = True
+        self.trans_list.pop(self.curr_index)
+        self.num_trans -= 1
+        print("\n*** SKIPPED ***\n")
+        print(self.trans_list)
+        print(self.num_trans)
+        print(self.curr_index)
+        if self.curr_index == self.num_trans:
+            self.confirm_window()
+            return
+        self.update_ui()
+
+    def update_ui(self):
+        print("Updating labels")
         self.date_val_label.config(text=self.trans_list[self.curr_index].post_date)
         self.amt_val_label.config(text=self.trans_list[self.curr_index].amount)
         self.desc_val_label.config(text=self.trans_list[self.curr_index].description)
@@ -298,35 +304,32 @@ class App():
         self.split_current = False
         curr_trans = self.trans_list[self.curr_index]
         self.trans_list.pop(self.curr_index)
-        transaction_one = Transaction(
-            curr_trans.bank_name,
-             self.first_split_amount_box.get(),
-             self.first_split_category_box.get(),
-             curr_trans.description,
-             curr_trans.note,
-             curr_trans.post_date
-        )
-        transaction_two = Transaction(
-            curr_trans.bank_name,
-             self.second_split_amount_box.get(),
-             self.second_split_category_box.get(),
-             curr_trans.description,
-             curr_trans.note,
-             curr_trans.post_date
-        )
-        self.trans_list.insert(self.curr_index, transaction_two)
-        self.trans_list.insert(self.curr_index, transaction_one)
-        self.num_trans += 1
-        self.category_box.delete(0, "end")
-        self.category_box.insert(0, self.first_split_category_box.get())
-        self.next_item()
-        self.category_box.delete(0, "end")
-        self.category_box.insert(0, self.second_split_category_box.get())
-        self.next_item()
 
-        self.split_frame.pack_forget()
+        # Increase the number of total transactions
+        self.num_trans += len(self.sub_transactions) - 1
+
+        for sub_trans in self.sub_transactions:
+            transaction = Transaction(
+                curr_trans.bank_name,
+                 sub_trans["amount"].get(),
+                 sub_trans["category"].get(),
+                 curr_trans.description,
+                 curr_trans.note,
+                 curr_trans.post_date
+            )
+            self.trans_list.insert(self.curr_index, transaction)
+
+        # Forward cursor to next transaction
+        self.curr_index += len(self.sub_transactions) - 1
+        self.sub_transactions.clear()
+        self.clear(self.sub_transactions_frame)
+        self.sub_transactions_frame.pack_forget()
+        self.split_button.configure(text="Split?")
         self.category_box.pack()
 
+        # Switch to next transaction
+        self.category_box.set(self.trans_list[self.curr_index].category)
+        self.next_item()
 
     def previous_item(self):
         print("Going back...")
