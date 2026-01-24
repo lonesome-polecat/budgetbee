@@ -214,7 +214,7 @@ class App():
 
         self.next_btn = tk.Button(self.action_frame, text="Next", command=self.next_item)
         self.next_btn.pack(side=tk.RIGHT)
-        self.skip_btn = tk.Button(self.action_frame, text="Ignore", command=(lambda: [self.next_item(skip=True)]))
+        self.skip_btn = tk.Button(self.action_frame, text="Ignore", command=self.ignore)
         self.skip_btn.pack(side=tk.RIGHT)
         self.back_btn = tk.Button(self.action_frame, text="Back", command=self.previous_item, state=tk.DISABLED)
         self.back_btn.pack(side=tk.LEFT)
@@ -262,31 +262,39 @@ class App():
         for w in frame.winfo_children():
             w.destroy()
 
-    def next_item(self, skip=False):
+    def next_item(self):
         if self.split_current:
             self.split_transaction()
             return
-        if not skip:
-            category = self.category_box.get()
-            self.trans_list[self.curr_index].category = category
-            print([self.trans_list[self.curr_index].description, self.trans_list[self.curr_index].category])
-            print("Updating current index")
-            self.curr_index += 1
-        else:
-            # TODO: Need to be able to go back on ignored transaction
-            # TODO: Need to be able to autofill category with prev selection if gone_back = True
-            self.trans_list.pop(self.curr_index)
-            self.num_trans -= 1
-            print("\n*** SKIPPED ***\n")
-            print(self.trans_list)
-            print(self.num_trans)
-            print(self.curr_index)
+        category = self.category_box.get()
+        self.trans_list[self.curr_index].category = category
+        print([self.trans_list[self.curr_index].description, self.trans_list[self.curr_index].category])
+        print("Updating current index")
+        self.curr_index += 1
+
         if self.curr_index == self.num_trans:
             self.confirm_window()
             return
-        print("Updating labels")
         if self.curr_index > 0:
             self.back_btn.config(state=tk.ACTIVE)
+        self.update_ui()
+
+    def ignore(self):
+        # TODO: Need to be able to go back on ignored transaction
+        # TODO: Need to be able to autofill category with prev selection if gone_back = True
+        self.trans_list.pop(self.curr_index)
+        self.num_trans -= 1
+        print("\n*** SKIPPED ***\n")
+        print(self.trans_list)
+        print(self.num_trans)
+        print(self.curr_index)
+        if self.curr_index == self.num_trans:
+            self.confirm_window()
+            return
+        self.update_ui()
+
+    def update_ui(self):
+        print("Updating labels")
         self.date_val_label.config(text=self.trans_list[self.curr_index].post_date)
         self.amt_val_label.config(text=self.trans_list[self.curr_index].amount)
         self.desc_val_label.config(text=self.trans_list[self.curr_index].description)
