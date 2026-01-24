@@ -144,7 +144,11 @@ class GoogleSheetsClient(client):
             self.upload_expenses()
             return
         rows = []
+        NUM_TRANSACTION_COLUMNS = 7
         print(F"categories = {self.categories}")
+
+        # order by date desc (reverse the list)
+        transactions = transactions[::-1]
         for tran in transactions:
             print(tran.category)
             if tran.category in self.categories:
@@ -163,15 +167,34 @@ class GoogleSheetsClient(client):
             values.append({"userEnteredValue": {"stringValue": tran.note}})
             rows.append({"values": values})
 
-        request = {"appendCells":
-            {
-                "sheetId": TRANSACTIONS_GRID_ID,
+        # First, insert new rows at the top of the sheet
+        insertRowsRequest = {
+            "insertDimension": {
+                "range": {
+                    "sheetId": TRANSACTIONS_GRID_ID,
+                    "dimension": "ROWS",
+                    "startIndex": 1,
+                    "endIndex": len(rows) + 1
+                }
+            }
+        }
+
+        # Fill the new rows with the transactions, the most recent at the top
+        updateRowsRequest = {
+            "updateCells": {
+                "range": {
+                    "sheetId": TRANSACTIONS_GRID_ID,
+                    "startRowIndex": 1,
+                    "endRowIndex": len(rows) + 1,
+                    "startColumnIndex": 0,
+                    "endColumnIndex": NUM_TRANSACTION_COLUMNS
+                },
                 "rows": rows,
                 "fields": "userEnteredValue"
             }
         }
 
-        body = {"requests": [request]}
+        body = {"requests": [insertRowsRequest, updateRowsRequest]}
         self.sheet = self.service.spreadsheets()
         result = (
             self.sheet.batchUpdate(spreadsheetId=BUDGET_SHEET,
