@@ -17,7 +17,7 @@ try:
     from utils.Bank import Bank
     import csv
     # import google_client as gc
-    import utils.googleClient as gc
+    import utils.GoogleSheetsClient as gsc
     from datetime import datetime as dt
 except BaseException as err:
     print(f"***ERROR: {err}\n\n Install the necessary packages:")
@@ -44,12 +44,12 @@ class App():
 
     def main(self):
         try:
-            self.client = gc.GoogleSheetsClient()
+            self.client = gsc.GoogleSheetsClient()
             self.client.connect()
         except google.auth.exceptions.RefreshError as err:
             print("Invalid token. Removing and retrying...")
             os.remove("../token.json")
-            self.client = gc.GoogleSheetsClient()
+            self.client = gsc.GoogleSheetsClient()
             self.client.connect(retry=True)
         except BaseException as err:
             app_error(err)
