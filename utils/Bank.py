@@ -47,11 +47,11 @@ class Bank:
                     # This fields MUST stay in this order - refer to Transaction class
                     transaction = Transaction(
                         self.name,
-                        line[self.headers.get(self.amount_column)],
+                        float(line[self.headers.get(self.amount_column)]),
                         line[self.headers.get(self.category_column)],
                         line[self.headers.get(self.description_column)],
                         line[self.headers.get(self.note_column)],
-                        line[self.headers.get(self.post_date_column)],
+                        line[self.headers.get(self.post_date_column)]
                     )
                     transactions.append(transaction)
 

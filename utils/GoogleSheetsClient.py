@@ -154,15 +154,14 @@ class GoogleSheetsClient(client):
             else:
                 error = f"Invalid category: ({tran.category}) how did that get in there?"
                 print(error)
-            values = []
+            values = [{"userEnteredValue": {"formulaValue": f'=TO_DATE(DATEVALUE("{tran.post_date}"))'}},
+                      {"userEnteredValue": {"stringValue": tran.bank_name}},
+                      {"userEnteredValue": {"numberValue": tran.amount}},
+                      {"userEnteredValue": {"stringValue": tran.description}},
+                      {"userEnteredValue": {"stringValue": tran.category}},
+                      {"userEnteredValue": {"stringValue": curr_user}},
+                      {"userEnteredValue": {"stringValue": tran.note}}]
             # Create the transaction row
-            values.append({"userEnteredValue": {"stringValue": tran.post_date}})
-            values.append({"userEnteredValue": {"stringValue": tran.bank_name}})
-            values.append({"userEnteredValue": {"stringValue": tran.amount}})
-            values.append({"userEnteredValue": {"stringValue": tran.description}})
-            values.append({"userEnteredValue": {"stringValue": tran.category}})
-            values.append({"userEnteredValue": {"stringValue": curr_user}})
-            values.append({"userEnteredValue": {"stringValue": tran.note}})
             rows.append({"values": values})
 
         # First, insert new rows at the top of the sheet
@@ -216,9 +215,9 @@ class GoogleSheetsClient(client):
             print(self.categoriesMap.get(cat).value)
             if type(self.categoriesMap.get(cat).value) is int:
                 self.categoriesMap.get(cat).value = str(self.categoriesMap.get(cat).value)
-            self.categoriesMap.get(cat).value += sign + tran.amount
+            self.categoriesMap.get(cat).value += sign + str(tran.amount)
         else:
-            self.categoriesMap.get(cat).value = "=" + sign + tran.amount
+            self.categoriesMap.get(cat).value = "=" + sign + str(tran.amount)
         print(self.categoriesMap.get(cat).value)
 
     def upload_expenses(self):
