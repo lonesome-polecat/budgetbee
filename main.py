@@ -136,8 +136,11 @@ class App():
             self.categories = self.client.get_categories(month)
             self.categories.append("Income")  # TODO: remove and put these categories in config
             self.categories.append("Record Only")
-            self.categories.remove("Leftover")
-            self.categories.remove("Savings Priority")
+            try:
+                self.categories.remove("Leftover")
+                self.categories.remove("Savings Priority")
+            except ValueError as e:
+                print("One of these categories ['Leftover', 'Savings Priority'] does not exist")
         except BaseException as err:
             app_error(err)
 
