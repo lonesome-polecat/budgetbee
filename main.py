@@ -17,7 +17,7 @@ try:
     from utils.Bank import Bank
     import csv
     # import google_client as gc
-    import utils.googleClient as gc
+    import utils.GoogleSheetsClient as gsc
     from datetime import datetime as dt
 except BaseException as err:
     print(f"***ERROR: {err}\n\n Install the necessary packages:")
@@ -44,12 +44,12 @@ class App():
 
     def main(self):
         try:
-            self.client = gc.GoogleSheetsClient()
+            self.client = gsc.GoogleSheetsClient()
             self.client.connect()
         except google.auth.exceptions.RefreshError as err:
             print("Invalid token. Removing and retrying...")
             os.remove("../token.json")
-            self.client = gc.GoogleSheetsClient()
+            self.client = gsc.GoogleSheetsClient()
             self.client.connect(retry=True)
         except BaseException as err:
             app_error(err)
@@ -136,8 +136,11 @@ class App():
             self.categories = self.client.get_categories(month)
             self.categories.append("Income")  # TODO: remove and put these categories in config
             self.categories.append("Record Only")
-            self.categories.remove("Leftover")
-            self.categories.remove("Savings Priority")
+            try:
+                self.categories.remove("Leftover")
+                self.categories.remove("Savings Priority")
+            except ValueError as e:
+                print("One of these categories ['Leftover', 'Savings Priority'] does not exist")
         except BaseException as err:
             app_error(err)
 
@@ -231,6 +234,9 @@ class App():
                                       text="Remember to add negative sign (-)" if self.bank.sign == "-" else "",
                                       fg="red")
             reminder_label.pack(side=tk.TOP, padx=5, pady=10)
+            # Make the first sub transaction
+            self.make_sub_transaction_frame(self.sub_transactions_frame)
+            # self.sub_transactions[0].get("amount").config(state="readonly")
         
         self.split_current = True
         self.make_sub_transaction_frame(self.sub_transactions_frame)
@@ -245,6 +251,7 @@ class App():
         sub_trans_amt_label.pack(side=tk.LEFT, padx=5, pady=10)
         sub_trans_amount_box = tk.Entry(sub_trans_amount_frame)
         sub_trans_amount_box.pack(side=tk.LEFT, padx=5, pady=10)
+        sub_trans_amount_box.bind("<KeyRelease>", self.calculate_remainder)
 
         sub_trans_category_label = tk.Label(sub_trans_amount_frame, text="Category:")
         sub_trans_category_label.pack(side=tk.LEFT, padx=5, pady=10)
@@ -257,6 +264,19 @@ class App():
             "category": sub_trans_category_box,
             "note" : ""
         })
+
+    def calculate_remainder(self, event):
+        print("Calculating remainder")
+        sub_total = 0
+        for i, sub_trans in enumerate(self.sub_transactions):
+            if i == 0:
+                continue
+            sub_total += float(sub_trans.get("amount").get())
+
+        # Calculate remainder
+        remainder = self.trans_list[self.curr_index].amount - sub_total
+        self.sub_transactions[0].get("amount").delete(0, tk.END)
+        self.sub_transactions[0].get("amount").insert(0, str(remainder))
 
     def clear(self, frame: tk.Frame):
         for w in frame.winfo_children():

@@ -2,7 +2,7 @@
 
 class Transaction:
     bank_name: str
-    amount: str
+    amount: float
     category: str
     description: str
     note: str
