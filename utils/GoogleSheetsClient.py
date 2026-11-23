@@ -112,7 +112,7 @@ class GoogleSheetsClient(client):
             for i, row in enumerate(rowData):
                 if row.get("values"):
                     cat = row.get("values")[0].get("userEnteredValue").get("stringValue")
-                    if cat == "Leftover":
+                    if cat == "Yearly Items":
                         self.budgetEndIndex = i
                         self.savingsStartIndex = i + 1
                     categories.append(cat)
